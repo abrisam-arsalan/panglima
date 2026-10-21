@@ -1,14 +1,25 @@
 import { NextResponse } from "next/server";
 
 const TEMPLATES: Record<string, { filename: string; content: string }> = {
+  kelas: {
+    filename: "template_impor_kelas.csv",
+    content:
+      "nama,tingkat,deskripsi\n" +
+      "7A,7,Kelas 7A Unggulan\n" +
+      "7B,7,Kelas 7B\n" +
+      "8A,8,Kelas 8A\n" +
+      "8B,8,Kelas 8B\n" +
+      "9A,9,Kelas 9A\n" +
+      "9B,9,Kelas 9B\n",
+  },
   siswa: {
     filename: "template_impor_siswa.csv",
     content:
-      "nisn,nama,rombel\n" +
-      "0101306751,Andi Pratama,9A\n" +
-      "0115115101,Bunga Citra Lestari,9A\n" +
-      "0101306752,Cahyo Nugroho,8B\n" +
-      "0115115102,Dewi Sartika,7A\n",
+      "nama,nisn,kelas,rombel,pin\n" +
+      "Andi Pratama,0115300001,9,9A,123456\n" +
+      "Bunga Citra Lestari,0115300002,9,9A,123456\n" +
+      "Cahyo Nugroho,0115300003,8,8B,654321\n" +
+      "Dewi Sartika,0115300004,7,7A,123456\n",
   },
   guru: {
     filename: "template_impor_guru.csv",

@@ -5,13 +5,17 @@ import { broadcastExamsAction, syncStudentsAction } from "@/app/ujian/actions";
 
 export default async function AdminUjianPage() {
   const user = await requireRole(["ADMIN"]);
-  const cbtBaseUrl = process.env.CBT_BASE_URL || "http://localhost:8000";
+  const cbtBaseUrl = process.env.CBT_BASE_URL;
+  if (!cbtBaseUrl) throw new Error("CBT_BASE_URL belum diset di .env");
 
   const totalSiswa = await prisma.user.count({
     where: { role: "SISWA", isActive: true, deletedAt: null },
   });
 
-  const totalTpScores = await prisma.tpScore.count();
+  // Hanya skor MANUAL (push CBT via /api/v1/tp-skor) — skor AUTO/LMS bukan nilai CBT.
+  const totalTpScores = await prisma.tpScore.count({
+    where: { source: "MANUAL" },
+  });
 
   return (
     <AppShell user={user} active="/admin/ujian">
@@ -57,7 +61,7 @@ export default async function AdminUjianPage() {
       <div className="card">
         <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
           <h2>Status Koneksi &amp; Endpoint CBT</h2>
-          <span className="badge badge-green">PORT 8000 AKTIF</span>
+          <span className="badge badge-green">SERVER CBT AKTIF</span>
         </div>
         <div className="card-body">
           <div className="table-wrap" style={{ overflowX: "auto" }}>

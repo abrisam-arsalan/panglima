@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    return NextResponse.json({ ok: true, app: "smp-lms", ts: new Date().toISOString() });
+    return NextResponse.json({ ok: true, app: "panglima", ts: new Date().toISOString() });
   } catch (e) {
     return NextResponse.json({ ok: false, error: String(e) }, { status: 503 });
   }

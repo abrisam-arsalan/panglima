@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/app-shell";
 import { DAYS } from "@/lib/notify";
 import { openSession, saveAttendance } from "./actions";
+import MarkAll from "./mark-all";
 import { AttendanceStatus } from "@prisma/client";
 
 export default async function PresensiPage({
@@ -63,14 +64,15 @@ export default async function PresensiPage({
           {ok && <p className="badge badge-green" style={{ marginTop: 8 }}>✅ Presensi berhasil disimpan!</p>}
         </div>
 
-        <form action={saveAttendance}>
+        <form action={saveAttendance} id="form-presensi">
           <input type="hidden" name="sessionId" value={String(session.id)} />
 
           <div className="card">
-            <div className="card-head">
+            <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
               <h2>Daftar Siswa ({session.records.length})</h2>
               <span className="muted">Default: HADIR. Klik opsi untuk siswa yang berhalangan.</span>
             </div>
+            <MarkAll formId="form-presensi" />
             <div className="card-body">
               {session.records.length === 0 && (
                 <div className="empty">Belum ada siswa terdaftar di kelas ini.</div>

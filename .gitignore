@@ -15,10 +15,15 @@ storage/
 *.db
 *.db-*
 
-# data PII siswa — JANGAN PERNAH masuk repo
+# data PII sekolah — JANGAN PERNAH masuk repo publik
+# (nama guru/siswa asli, NISN/NIP, roster, jadwal riil)
 referensi/
 *_nilai_*.xlsx
 contoh-*.xlsx
+scripts/seed_full_schedule.js
+scripts/inspect_db.js
+prisma/seed-demo.ts
+prisma/simulate-workflow.ts
 
 # temp
 *.log

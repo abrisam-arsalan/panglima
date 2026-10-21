@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Backup LMS: dump DB + upload files → disk sdb, retensi 30 hari.
-# Dipanggil dari cron 02:30 (lihat docs/RUNBOOK.md §7). args: <BACKUP_DIR>
+# Backup PANGLIMA: dump DB + upload files → direktori backup, retensi 30 hari.
+# Dipanggil dari cron 02:30 (lihat docs/RUNBOOK-DEPLOY.md §7). args: <BACKUP_DIR>
+# Target HARUS perangkat berbeda (PRD v2 §9) — bukan partisi disk yang sama.
 set -euo pipefail
-DEST="${1:?pakai: backup-lms.sh /path/ke/disk-backup}"
-APP=/var/www/lms
+DEST="${1:?pakai: backup-panglima.sh /path/ke/disk-backup}"
+APP=/var/www/panglima
 STAMP=$(date +%Y%m%d-%H%M%S)
 
 mkdir -p "$DEST"

@@ -159,9 +159,30 @@ export async function broadcastNewCbtExams(): Promise<{ broadcasted: number }> {
 
 /**
  * Sinkronisasi data siswa aktif dari Portal Panglima ke database cbt_tka.users & classes.
+ * Selama cbt_tka.users masih TABEL fisik (belum VIEW per P1-A3), fallback SQL langsung
+ * tetap dipakai. Setelah migrasi VIEW (P7), hapus fallback INSERT di bawah.
+ * Path CLI Laravel diambil dari env CBT_PATH agar tidak hardcoded Windows.
  */
 export async function syncStudentsToCbt(): Promise<{ synced: number; errors: number }> {
   try {
+    const { exec } = await import("node:child_process");
+    const { promisify } = await import("node:util");
+    const execAsync = promisify(exec);
+    const cbtPath = process.env.CBT_PATH ?? "";
+
+    if (cbtPath) {
+      try {
+        const { stdout } = await execAsync("php artisan cbt:sync-students", { cwd: cbtPath });
+        const match = stdout.match(/Berhasil diproses:\s*(\d+)/);
+        const syncedCount = match ? Number(match[1]) : 0;
+        return { synced: syncedCount, errors: 0 };
+      } catch (cmdErr) {
+        console.warn("Artisan sync gagal, menggunakan fallback SQL:", cmdErr);
+      }
+    } else {
+      console.warn("CBT_PATH tidak diset — lewati artisan, langsung fallback SQL.");
+    }
+
     const students = await prisma.user.findMany({
       where: { role: "SISWA", isActive: true, deletedAt: null },
       include: { classRef: true },
@@ -172,7 +193,6 @@ export async function syncStudentsToCbt(): Promise<{ synced: number; errors: num
 
     for (const s of students) {
       try {
-        // Cari class_id di cbt_tka
         let cbtClassId: bigint | null = null;
         if (s.classRef) {
           const cbtClasses = await prisma.$queryRawUnsafe<{ id: bigint }[]>(
@@ -182,7 +202,6 @@ export async function syncStudentsToCbt(): Promise<{ synced: number; errors: num
           if (cbtClasses.length > 0) {
             cbtClassId = cbtClasses[0].id;
           } else {
-            // Buat kelas di cbt_tka jika belum ada
             await prisma.$queryRawUnsafe(
               `INSERT INTO cbt_tka.classes (name, grade, academic_year, is_active, created_at, updated_at) VALUES (?, ?, '2026/2027', 1, NOW(), NOW())`,
               s.classRef.name,
@@ -197,7 +216,6 @@ export async function syncStudentsToCbt(): Promise<{ synced: number; errors: num
         }
 
         const username = s.nisn || s.username;
-        // Upsert siswa ke cbt_tka.users
         await prisma.$queryRawUnsafe(`
           INSERT INTO cbt_tka.users (username, name, email, password, role, class_id, nisn, is_active, created_at, updated_at)
           VALUES (?, ?, ?, ?, 'siswa', ?, ?, 1, NOW(), NOW())

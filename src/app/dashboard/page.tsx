@@ -15,9 +15,9 @@ const MODULES: { nama: string; href: string; desc: string; icon: string; status:
   { nama: "MPI Edukasi", href: "/mpi", desc: "Game interaktif & media belajar", icon: "🎮", status: "GAME", roles: ["GURU", "SISWA", "KEPSEK"] },
   { nama: "Ujian CBT", href: "/ujian", desc: "Platform asesmen & tes formatif", icon: "📋", status: "CBT", roles: ["GURU", "SISWA", "ORTU", "ADMIN"] },
   { nama: "Kehadiran", href: "/rekap-presensi", desc: "Pantau rekap kehadiran belajar", icon: "📅", status: "PRESENSI", roles: ["SISWA", "ORTU", "KEPSEK"] },
-  { nama: "Kelola Akun", href: "/admin/users", desc: "Kelola akun guru, siswa, & ortu", icon: "👥", status: "ADMIN", roles: ["ADMIN"] },
-  { nama: "Master Data", href: "/admin/master", desc: "Rombel, mapel, & penugasan mengajar", icon: "🗂", status: "ADMIN", roles: ["ADMIN"] },
-  { nama: "Impor Data CSV", href: "/admin/import", desc: "Impor massal siswa, guru, jadwal, ortu", icon: "📥", status: "ADMIN", roles: ["ADMIN"] },
+  { nama: "Kelola Akun", href: "/admin/akun/siswa", desc: "Kelola akun siswa, guru, rombel, & ortu", icon: "👥", status: "ADMIN", roles: ["ADMIN"] },
+  { nama: "Penugasan Mengajar", href: "/admin/penugasan", desc: "Penugasan guru, wali kelas, & mapel", icon: "📋", status: "ADMIN", roles: ["ADMIN"] },
+  { nama: "Jadwal Pelajaran", href: "/jadwal", desc: "Kelola & impor jadwal pelajaran", icon: "🗓️", status: "ADMIN", roles: ["ADMIN"] },
   { nama: "Pengumuman", href: "/pengumuman", desc: "Warta & agenda penting sekolah", icon: "📢", status: "INFO", roles: ["GURU", "SISWA", "ORTU", "KEPSEK", "ADMIN"] },
 ];
 
@@ -111,7 +111,7 @@ export default async function DashboardPage() {
       <div className="page-head">
         <h1>Selamat datang, {user.nama.split(",")[0]} 👋</h1>
         {user.role === "ADMIN" && (
-          <p>Total akun terdaftar: <strong>{totalUser}</strong>. <a href="/admin/users">Kelola akun →</a></p>
+          <p>Total akun terdaftar: <strong>{totalUser}</strong>. <a href="/admin/akun/siswa">Kelola akun →</a></p>
         )}
         {user.role === "GURU" && (
           <p>
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
           <div className="card-body">
             {!guruSum.punyaRombel && (
               <p className="alert alert-error" style={{ marginBottom: 10 }}>
-                Anda belum memiliki jadwal kelas mengajar pada semester ini — silakan hubungi admin untuk pembagian tugas mengajar di menu <b>Master &amp; Penugasan</b>.
+                Anda belum memiliki jadwal kelas mengajar pada semester ini — silakan hubungi admin untuk pembagian tugas mengajar di menu <b>Penugasan</b>.
               </p>
             )}
             {guruSum.pending > 0 && (

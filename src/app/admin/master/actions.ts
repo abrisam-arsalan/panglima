@@ -81,6 +81,18 @@ export async function addClass(formData: FormData) {
     create: { name, tingkat: Number(m[1]), academicYearId: ctx.year.id },
     update: {},
   });
+
+  // Sinkronkan ke database ujian CBT
+  try {
+    await prisma.$queryRawUnsafe(`
+      INSERT INTO cbt_tka.classes (name, grade, academic_year, is_active, created_at, updated_at)
+      VALUES (?, ?, ?, 1, NOW(), NOW())
+      ON DUPLICATE KEY UPDATE grade = VALUES(grade), is_active = 1, updated_at = NOW()
+    `, name, String(m[1]), ctx.year.name || '2026/2027');
+  } catch (syncErr) {
+    console.error("Auto sync class to CBT error:", syncErr);
+  }
+
   await logAudit({ userId: admin.id, action: "ROMBEL_BARU", entity: "classes", entityId: name });
   revalidatePath("/admin/master");
 }

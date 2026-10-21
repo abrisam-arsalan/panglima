@@ -1,17 +1,33 @@
 import type { Role } from "@prisma/client";
 
-export interface NavItem {
+export interface NavChild {
   href: string;
   icon: string;
   label: string;
 }
 
+export interface NavItem {
+  href: string;
+  icon: string;
+  label: string;
+  children?: NavChild[];
+}
+
 export const NAV: Record<Role, NavItem[]> = {
   ADMIN: [
     { href: "/dashboard", icon: "🏠", label: "Beranda" },
-    { href: "/admin/users", icon: "👥", label: "Akun" },
-    { href: "/admin/master", icon: "🗂", label: "Master" },
-    { href: "/admin/import", icon: "📥", label: "Import" },
+    {
+      href: "/admin/akun/siswa",
+      icon: "👥",
+      label: "Akun",
+      children: [
+        { href: "/admin/akun/kelas", icon: "🏫", label: "Kelas & Rombel" },
+        { href: "/admin/akun/siswa", icon: "🎓", label: "Siswa" },
+        { href: "/admin/akun/guru", icon: "👨‍🏫", label: "Guru" },
+        { href: "/admin/akun/ortu", icon: "👨‍👩‍👧", label: "Orang Tua" },
+      ],
+    },
+    { href: "/admin/penugasan", icon: "📋", label: "Penugasan" },
     { href: "/jadwal", icon: "🗓️", label: "Jadwal" },
     { href: "/pengumuman", icon: "📢", label: "Pengumuman" },
     { href: "/admin/ujian", icon: "📋", label: "Ujian" },

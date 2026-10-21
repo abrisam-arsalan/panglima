@@ -1,0 +1,26 @@
+# /etc/systemd/system/panglima.service — Portal Panglima SMPN 5 Tegal
+# Next.js standalone, port 3005. Salin ke server lalu enable.
+# JANGAN tulis .env di sini — kredensial hanya di /var/www/panglima/.env (mode 600).
+# Catatan P1-SKEMA §6(e): JANGAN pakai EnvironmentFile= untuk .env Next.js
+# (systemd menyimpan tanda kutip DATABASE_URL apa adanya). Node --env-file
+# yang membaca .env — cara yang sudah terbukti jalan.
+[Unit]
+Description=Portal Panglima SMP Negeri 5 Tegal (Next.js standalone, port 3005)
+After=network.target mariadb.service
+Wants=mariadb.service
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/var/www/panglima
+# Node dari tarball (/usr/local/bin) — BUKAN /usr/bin (jebakan P1-SKEMA §6e.1)
+ExecStart=/usr/local/bin/node --env-file=.env --max-old-space-size=768 server.js
+Restart=on-failure
+RestartSec=5
+# keamanan dasar
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

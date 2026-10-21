@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, logAudit } from "@/lib/auth";
 import { currentSemester } from "@/lib/academic";
 import { planSiswa, planGuru, planJadwal, planOrtu, type ImportKind } from "@/lib/importer";
+import { syncStudentsToCbt } from "@/lib/cbt-sync";
 
 const IMPORT_DIR = path.resolve("storage/imports");
 
@@ -260,12 +261,12 @@ export async function commitImport(formData: FormData) {
     }
 
     const exist = await prisma.user.findUnique({ where: { username: r.username }, select: { id: true, nama: true } });
-    if (exist) {
-      result.existing++;
-      continue;
-    }
 
     if (kind === "guru") {
+      if (exist) {
+        result.existing++;
+        continue;
+      }
       await prisma.user.create({
         data: {
           username: r.username,
@@ -276,10 +277,15 @@ export async function commitImport(formData: FormData) {
           mustChangePin: true,
         },
       });
+      result.created++;
     } else {
       let classId: bigint | undefined = classCache.get(r.rombel!.toUpperCase());
       if (classId === undefined) {
-        const tingkat = Number(r.rombel!.match(/^\d/)?.[0] ?? 7);
+        const parsedTingkat = r.kelas ? Number(r.kelas.replace(/\D/g, "")) : NaN;
+        const tingkat = !isNaN(parsedTingkat) && parsedTingkat > 0
+          ? parsedTingkat
+          : Number(r.rombel!.match(/\d+/)?.[0] ?? 7);
+
         const created = await prisma.class.create({
           data: { name: r.rombel!, tingkat, academicYearId: ctx.year.id },
           select: { id: true, name: true },
@@ -288,19 +294,47 @@ export async function commitImport(formData: FormData) {
         classId = created.id;
         result.rombelBaru.push(r.rombel!);
       }
+
+      const plainPin = r.pin?.trim() || tmpPass;
+      const studentPasswordHash = r.pin?.trim() ? await bcrypt.hash(plainPin, 10) : hash;
+
+      if (exist) {
+        await prisma.user.update({
+          where: { id: exist.id },
+          data: {
+            nama: r.nama,
+            nisn: r.nisn || null,
+            classId,
+            ...(r.pin?.trim() ? { passwordHash: studentPasswordHash, pinCipher: plainPin } : {}),
+          },
+        });
+        result.existing++;
+        continue;
+      }
+
       await prisma.user.create({
         data: {
-          username: r.username,
+          username: r.username, // NISN sekaligus Username
           nama: r.nama,
           role: "SISWA",
-          passwordHash: hash,
+          passwordHash: studentPasswordHash,
+          pinCipher: plainPin, // Plain PIN disimpan agar di-sync ke CBT
           nisn: r.nisn || null,
           classId,
-          mustChangePin: true,
+          mustChangePin: false,
         },
       });
+      result.created++;
     }
-    result.created++;
+  }
+
+  // Jika impor siswa, otomatis sinkronkan data siswa ke database aplikasi ujian (CBT)
+  if (kind === "siswa") {
+    try {
+      await syncStudentsToCbt();
+    } catch (syncErr) {
+      console.error("Auto sync to CBT error:", syncErr);
+    }
   }
 
   await logAudit({
@@ -313,5 +347,16 @@ export async function commitImport(formData: FormData) {
   await fs.rm(file, { force: true });
   await fs.writeFile(path.join(IMPORT_DIR, `${rev}.done.json`), JSON.stringify(result));
   revalidatePath("/admin/users");
+  revalidatePath("/admin/ujian");
   redirect(`/admin/import?done=${rev}&kind=${kind}`);
+}
+
+/** Aksi manual sinkronisasi siswa ke CBT */
+export async function syncCbtStudentsAction() {
+  await guard();
+  const res = await syncStudentsToCbt();
+  revalidatePath("/admin/ujian");
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/import");
+  return res;
 }

@@ -1,14 +1,20 @@
 import { requireUser } from "@/lib/auth";
 import AppShell from "@/components/app-shell";
-import { getCbtExamsForUser, broadcastNewCbtExams } from "@/lib/cbt-sync";
-import { broadcastExamsAction, syncStudentsAction } from "./actions";
+import { getCbtExamsForUser } from "@/lib/cbt-sync";
+import { broadcastExamsAction, launchCbt, syncStudentsAction } from "./actions";
 
 export default async function UjianPortalPage() {
   const user = await requireUser();
-  const cbtBaseUrl = process.env.CBT_BASE_URL || "http://localhost:8000";
+  // Wajib via env — tanpa fallback localhost diam-diam di produksi.
+  const cbtBaseUrl = process.env.CBT_BASE_URL;
+  if (!cbtBaseUrl) {
+    throw new Error("CBT_BASE_URL belum diset di .env");
+  }
 
-  // Cek & siarkan ujian baru di cbt_tka ke notifikasi/pengumuman secara otomatis
-  await broadcastNewCbtExams().catch(() => {});
+  // CATATAN: broadcast ujian baru TIDAK lagi otomatis tiap render
+  // (berat + side-effect di render + risiko spam pengumuman).
+  // Admin/Guru memicunya manual via tombol "Siarkan Notifikasi Ujian",
+  // atau cron memanggil broadcastExamsAction.
 
   // Ambil daftar ujian yang relevan bagi user
   const exams = await getCbtExamsForUser(user);
@@ -52,7 +58,7 @@ export default async function UjianPortalPage() {
           <div className="card">
             <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
               <h2>Daftar Jadwal Ujian Tersedia 🎯</h2>
-              <span className="badge badge-green">SERVER AKTIF (PORT 8000)</span>
+              <span className="badge badge-green">SERVER CBT AKTIF</span>
             </div>
             <div className="card-body">
               {exams.length > 0 ? (
@@ -88,15 +94,15 @@ export default async function UjianPortalPage() {
                       </div>
 
                       <div className="w-full-mobile" style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <a
-                          className="btn btn-primary btn-block-mobile"
-                          href={`${cbtBaseUrl}/login`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ minHeight: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
-                        >
-                          🚀 Masuk &amp; Kerjakan Ujian ↗
-                        </a>
+                        <form action={launchCbt}>
+                          <button
+                            className="btn btn-primary btn-block-mobile"
+                            type="submit"
+                            style={{ minHeight: 44, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                          >
+                            🚀 Masuk &amp; Kerjakan Ujian
+                          </button>
+                        </form>
                       </div>
                     </div>
                   ))}
@@ -115,8 +121,15 @@ export default async function UjianPortalPage() {
             </div>
             <div className="card-body">
               <p style={{ lineHeight: 1.6, fontSize: 15, marginBottom: 16 }}>
-                Ujian dilaksanakan di sistem CBT mandiri agar koneksi tetap stabil selama pengerjaan soal. 
-                Saat membuka halaman ujian, Anda <b>tetap harus login ulang</b> menggunakan kredensial akun siswa Anda:
+                Ujian dilaksanakan di sistem CBT mandiri agar koneksi tetap stabil selama pengerjaan soal.
+                {process.env.CBT_SSO_ENABLED === "1" ? (
+                  <>Tekan tombol di bawah — portal menerbitkan kode sekali-pakai (60 detik) agar Anda
+                  <b> tidak perlu mengetik ulang</b> username &amp; PIN. Bila kode kedaluwarsa / portal
+                  tidak terjangkau, login manual dengan kredensial berikut tetap berfungsi:</>
+                ) : (
+                  <>Tekan tombol di bawah untuk membuka halaman ujian, lalu <b>login ulang</b> dengan
+                  kredensial berikut (mode handoff aktif setelah CBT di-update — lihat P7):</>
+                )}
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
@@ -126,7 +139,7 @@ export default async function UjianPortalPage() {
                 </div>
                 <div className="list-row" style={{ margin: 0, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                   <span>🔑 <b>Password / PIN Siswa:</b></span>
-                  <span className="meta">Gunakan PIN yang sama dengan portal (default: <code>123456</code>)</span>
+                  <span className="meta">Gunakan PIN yang sama dengan portal (minta ke wali kelas bila lupa)</span>
                 </div>
                 <div className="list-row" style={{ margin: 0, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                   <span>🌐 <b>Alamat Server Ujian CBT:</b></span>
@@ -134,20 +147,31 @@ export default async function UjianPortalPage() {
                 </div>
               </div>
 
-              <div>
-                <a
-                  className="btn btn-primary btn-block-mobile"
-                  href={`${cbtBaseUrl}/login`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontSize: 16, padding: "12px 24px", minHeight: 48, display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
-                >
-                  🚀 Buka Halaman Login Ujian Siswa ↗
-                </a>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <form action={launchCbt}>
+                  <button
+                    className="btn btn-primary btn-block-mobile"
+                    type="submit"
+                    style={{ fontSize: 16, padding: "12px 24px", minHeight: 48, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    {process.env.CBT_SSO_ENABLED === "1" ? "🚀 Masuk Ujian (tanpa ketik ulang)" : "🚀 Buka Halaman Ujian"}
+                  </button>
+                </form>
+                {process.env.CBT_SSO_ENABLED === "1" && (
+                  <a
+                    className="btn btn-block-mobile"
+                    href={`${cbtBaseUrl}/login`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: 14, padding: "12px 20px", minHeight: 48, display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
+                  >
+                    Login manual ↗
+                  </a>
+                )}
               </div>
 
               <div className="meta" style={{ marginTop: 16, fontSize: 13, borderTop: "1px dashed var(--ink)", paddingTop: 12 }}>
-                💡 <i>Tips: Halaman ujian akan terbuka di tab baru. Pastikan tidak menutup browser atau membuka tab lain selama ujian berlangsung (anti-cheat aktif).</i>
+                💡 <i>Tips: pastikan tidak menutup browser atau membuka tab lain selama ujian berlangsung (anti-cheat aktif).</i>
               </div>
             </div>
           </div>

@@ -24,5 +24,9 @@ export async function verifyHandoffCode(plain: string): Promise<bigint | null> {
   const code = await prisma.handoffCode.findUnique({ where: { codeHash: hash } });
   if (!code || code.usedAt || code.expiresAt < new Date()) return null;
   await prisma.handoffCode.update({ where: { codeHash: hash }, data: { usedAt: new Date() } });
+  // Bersihkan kode kedaluwarsa/terpakai agar tabel tidak tumbuh tanpa batas.
+  await prisma.handoffCode.deleteMany({
+    where: { OR: [{ expiresAt: { lt: new Date() } }, { usedAt: { not: null } }] },
+  }).catch(() => {});
   return code.userId;
 }

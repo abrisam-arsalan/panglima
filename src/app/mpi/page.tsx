@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/app-shell";
+import MpiMain from "./main";
 
 const DEFAULT_GAMES = [
   { slug: "clash-of-champions", title: "Clash of Champions", desc: "Kompetisi adu cepat menjawab kuis pengetahuan.", icon: "🏆", file: "clash-of-champions.html" },
@@ -22,7 +23,31 @@ export default async function MpiPage({
   const user = await requireUser();
   const { game: activeGameSlug } = await searchParams;
 
-  const activeGame = DEFAULT_GAMES.find((g) => g.slug === activeGameSlug);
+  // Game DB (aktif) digabung dengan default statis agar bank soal guru langsung tampil.
+  const dbGames = await prisma.mpiGame.findMany({
+    where: { aktif: true },
+    orderBy: { urutan: "asc" },
+    select: { slug: true, nama: true, deskripsi: true, icon: true, filePath: true },
+  }).catch(() => []);
+  const games = dbGames.length > 0
+    ? dbGames.map((g) => ({
+        slug: g.slug,
+        title: g.nama,
+        desc: g.deskripsi ?? "",
+        icon: g.icon,
+        file: g.filePath || `${g.slug}.html`,
+      }))
+    : DEFAULT_GAMES;
+
+  const activeGame = games.find((g) => g.slug === activeGameSlug);
+  // Tingkat siswa untuk filter soal (7/8/9); non-siswa = semua tingkat.
+  const me = user.role === "SISWA"
+    ? await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { classRef: { select: { tingkat: true } } },
+      }).catch(() => null)
+    : null;
+  const tingkat = me?.classRef?.tingkat ?? undefined;
 
   if (activeGame) {
     return (
@@ -46,24 +71,23 @@ export default async function MpiPage({
           </a>
         </div>
 
-        <div
-          className="card"
-          style={{
-            padding: 0,
-            overflow: "hidden",
-            height: "calc(100vh - 180px)",
-            minHeight: 480,
-            maxHeight: 820,
-            border: "var(--line)",
-            boxShadow: "var(--shadow-lg)",
-          }}
-        >
-          <iframe
-            src={`/game/${activeGame.file}`}
-            style={{ width: "100%", height: "100%", border: "none" }}
-            title={activeGame.title}
-            allow="camera; microphone; fullscreen; autoplay"
-          />
+        {/* Mode 1: soal server (koreksi di server, kunci tidak ke klien) */}
+        <MpiMain slug={activeGame.slug} title={activeGame.title} tingkat={tingkat} />
+
+        {/* Mode 2: arena HTML statis (game visual tanpa bank soal) */}
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="card-head">
+            <h2>🎮 Arena Visual</h2>
+            <span className="muted">Game HTML interaktif (tanpa skor server)</span>
+          </div>
+          <div className="card-body" style={{ padding: 0, overflow: "hidden" }}>
+            <iframe
+              src={`/game/${activeGame.file}`}
+              style={{ width: "100%", height: 480, border: "none" }}
+              title={activeGame.title}
+              allow="camera; microphone; fullscreen; autoplay"
+            />
+          </div>
         </div>
       </AppShell>
     );
@@ -76,9 +100,16 @@ export default async function MpiPage({
         <span className="sep">&gt;</span>
         <span className="current">MPI Edukasi</span>
       </div>
-      <div className="page-head">
-        <h1>Media Pembelajaran Interaktif (MPI) 🎮</h1>
-        <p>Game edukasi interaktif berbasis web untuk pembelajaran aktif di kelas dan mandiri.</p>
+      <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h1>Media Pembelajaran Interaktif (MPI) 🎮</h1>
+          <p>Game edukasi interaktif berbasis web untuk pembelajaran aktif di kelas dan mandiri.</p>
+        </div>
+        {(user.role === "GURU" || user.role === "ADMIN") && (
+          <a className="btn btn-sm btn-primary btn-block-mobile" href="/mpi/bank" style={{ minHeight: 44, display: "inline-flex", alignItems: "center" }}>
+            📚 Kelola Bank Soal
+          </a>
+        )}
       </div>
 
       <div
@@ -88,7 +119,7 @@ export default async function MpiPage({
           gap: 16,
         }}
       >
-        {DEFAULT_GAMES.map((g) => (
+        {games.map((g) => (
           <div key={g.slug} className="card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             <div className="card-body">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>

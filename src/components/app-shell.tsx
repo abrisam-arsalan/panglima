@@ -60,12 +60,48 @@ export default async function AppShell({
         {isAdmin ? (
           <aside className="sidebar">
             <nav className="side-nav">
-              {nav.map((n) => (
-                <a key={n.href} className={`side-item ${active === n.href ? "active" : ""}`} href={n.href}>
-                  <span className="ico">{n.icon}</span>
-                  <span>{n.label}</span>
-                </a>
-              ))}
+              {nav.map((n) => {
+                const isItemActive = active === n.href || (n.children && n.children.some((c) => active === c.href));
+                return (
+                  <div key={n.href} className="side-group" style={{ display: "flex", flexDirection: "column" }}>
+                    <a
+                      className={`side-item ${isItemActive && !n.children ? "active" : ""}`}
+                      href={n.children ? n.children[0].href : n.href}
+                    >
+                      <span className="ico">{n.icon}</span>
+                      <span>{n.label}</span>
+                    </a>
+                    {n.children && (
+                      <div className="side-sub-nav" style={{ display: "flex", flexDirection: "column", gap: 3, paddingLeft: 14, margin: "4px 0 8px" }}>
+                        {n.children.map((sub) => (
+                          <a
+                            key={sub.href}
+                            className={`side-sub-item ${active === sub.href ? "active" : ""}`}
+                            href={sub.href}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                              padding: "6px 10px",
+                              fontSize: 13,
+                              fontWeight: 700,
+                              textDecoration: "none",
+                              color: "var(--ink)",
+                              borderRadius: "var(--radius-sm, 6px)",
+                              background: active === sub.href ? "var(--yellow, #ffd54f)" : "transparent",
+                              border: active === sub.href ? "1.5px solid var(--ink, #000)" : "1.5px solid transparent",
+                              boxShadow: active === sub.href ? "1px 1px 0 var(--ink, #000)" : "none",
+                            }}
+                          >
+                            <span>{sub.icon}</span>
+                            <span>{sub.label}</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </nav>
           </aside>
         ) : null}

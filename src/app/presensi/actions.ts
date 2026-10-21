@@ -16,6 +16,10 @@ export async function openSession(formData: FormData) {
   const dateStr = String(formData.get("date") ?? "").trim();
   if (!scheduleId || !dateStr) redirect("/presensi");
 
+  // Tolak tanggal di masa depan — presensi hanya untuk hari berjalan / yang lewat.
+  const todayStr = new Date().toISOString().slice(0, 10);
+  if (dateStr > todayStr) throw new Error("Tidak bisa membuka presensi untuk tanggal di masa depan");
+
   const schedule = await prisma.schedule.findUnique({
     where: { id: scheduleId },
     include: { assignment: true },
@@ -89,6 +93,11 @@ export async function saveAttendance(formData: FormData) {
     include: { schedule: { include: { assignment: true } } },
   });
   if (!session) throw new Error("Sesi tidak ditemukan");
+
+  // Sesi SELESAI = riwayat terkunci. Koreksi hanya via admin (buka kembali dulu).
+  if (session.status === ClassSessionStatus.SELESAI && user.role !== "ADMIN") {
+    throw new Error("Sesi sudah selesai dan terkunci. Hubungi admin untuk koreksi.");
+  }
 
   if (user.role === "GURU" && session.schedule.assignment.teacherId !== user.id) {
     throw new Error("Akses ditolak");

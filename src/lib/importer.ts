@@ -1,14 +1,16 @@
 import { parseCsv, headerIdx } from "@/lib/csv";
 
-export type ImportKind = "siswa" | "guru" | "jadwal" | "ortu";
+export type ImportKind = "siswa" | "guru" | "jadwal" | "ortu" | "kelas";
 
 export interface RowPlan {
   line: number;      // nomor baris di file ( utk laporan )
   username: string;
   nama: string;
   nisn?: string;     // siswa — wajib (dipakai sbg username)
+  kelas?: string;    // siswa — jenjang/tingkat (7, 8, 9, X, XI, XII)
+  pin?: string;      // siswa — PIN login ujian & portal (misal 123456)
   nip?: string;      // guru — wajib (dipakai sbg username)
-  rombel?: string;   // siswa / jadwal
+  rombel?: string;   // siswa / jadwal / kelas
   hari?: number;     // 0=Minggu .. 6=Sabtu
   hariText?: string;
   startTime?: string;// "07:30"
@@ -47,37 +49,65 @@ function normalizeTime(val: string): string | null {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-/** CSV siswa — header minimal: nama, rombel; identitas: nisn atau nis (dipakai sbg username). */
-/** CSV siswa — header minimal: nisn, nama, rombel; NISN wajib dipakai sbg username. */
+/** CSV siswa — rincian: nama, nisn (sekaligus username), kelas, rombel, pin */
 export function planSiswa(text: string): { rows: RowPlan[]; problems: string[] } {
   const problems: string[] = [];
   const grid = parseCsv(text);
   if (!grid.length) return { rows: [], problems: ["File kosong."] };
   const h = headerIdx(grid[0]);
-  for (const k of ["nisn", "nama", "rombel"]) {
+  for (const k of ["nisn", "nama"]) {
     if (h[k] === undefined && !(k === "nama" && h["nama siswa"] !== undefined))
       problems.push(`Kolom '${k}' wajib ada di header.`);
   }
+  if (h["rombel"] === undefined && h["kelas"] === undefined) {
+    problems.push("Kolom 'rombel' atau 'kelas' wajib ada di header.");
+  }
   if (problems.length) return { rows: [], problems };
+
   const namaCol = h["nama"] ?? h["nama siswa"];
   const rombelCol = h["rombel"] ?? h["kelas"];
+  const kelasCol = h["kelas"] !== undefined && h["rombel"] !== undefined ? h["kelas"] : (h["tingkat"] ?? h["jenjang"]);
+  const pinCol = h["pin"] ?? h["password"];
+
   const seen = new Set<string>();
   const rows: RowPlan[] = [];
   for (let i = 1; i < grid.length; i++) {
     const r = grid[i];
     const nama = clean(r[namaCol] ?? "");
-    const rombel = clean(r[rombelCol ?? -1] ?? "", 16).toUpperCase();
+    const rombel = clean(r[rombelCol ?? -1] ?? "", 32).toUpperCase();
     const nisn = clean(r[h["nisn"] ?? -1] ?? "", 32);
-    const username = clean(r[h["username"] ?? -1] ?? "") || nisn;
+    const username = nisn; // NISN sekaligus Username
+    const kelas = kelasCol !== undefined ? clean(r[kelasCol] ?? "", 16) : (rombel.match(/^\d+/)?.[0] || "");
+    const pin = pinCol !== undefined ? clean(r[pinCol] ?? "", 32) : "";
+
     let status: RowPlan["status"] = "OK";
     let reason = "";
-    if (!nama) { status = "ERR"; reason = "nama kosong"; }
-    else if (!rombel || !/^\d[A-Z]?$/.test(rombel)) { status = "ERR"; reason = `rombel '${rombel || "-"}' tidak valid (contoh: 9A, 8B)`; }
-    else if (!nisn) { status = "ERR"; reason = "NISN wajib diisi (dipakai sebagai username siswa)"; }
-    else if (!username) { status = "ERR"; reason = "NISN wajib diisi (dipakai sebagai username siswa)"; }
-    else if (seen.has(username)) { status = "ERR"; reason = "NISN duplikat dalam file"; }
+    if (!nama) {
+      status = "ERR";
+      reason = "nama kosong";
+    } else if (!nisn) {
+      status = "ERR";
+      reason = "NISN wajib diisi (dipakai sebagai username siswa)";
+    } else if (!rombel) {
+      status = "ERR";
+      reason = "rombel wajib diisi";
+    } else if (seen.has(username)) {
+      status = "ERR";
+      reason = "NISN duplikat dalam file";
+    }
+
     if (status === "OK") seen.add(username);
-    rows.push({ line: i + 1, username, nama, nisn: nisn || undefined, rombel, status, reason: reason || undefined });
+    rows.push({
+      line: i + 1,
+      username,
+      nama,
+      nisn: nisn || undefined,
+      kelas: kelas || undefined,
+      rombel,
+      pin: pin || undefined,
+      status,
+      reason: reason || undefined,
+    });
   }
   return { rows, problems };
 }
@@ -261,6 +291,58 @@ export function planOrtu(text: string): { rows: RowPlan[]; problems: string[] } 
     });
   }
 
+  return { rows, problems };
+}
+
+/** CSV kelas — header minimal: nama (rombel, misal 7A); opsi: tingkat, deskripsi */
+export function planKelas(text: string): { rows: RowPlan[]; problems: string[] } {
+  const problems: string[] = [];
+  const grid = parseCsv(text);
+  if (!grid.length) return { rows: [], problems: ["File kosong."] };
+  const h = headerIdx(grid[0]);
+  if (h["nama"] === undefined && h["rombel"] === undefined && h["kelas"] === undefined) {
+    problems.push("Kolom 'nama' atau 'rombel' wajib ada di header.");
+  }
+  if (problems.length) return { rows: [], problems };
+
+  const namaCol = h["nama"] ?? h["rombel"] ?? h["kelas"];
+  const tingkatCol = h["tingkat"] ?? h["grade"] ?? h["jenjang"];
+  const descCol = h["deskripsi"] ?? h["keterangan"];
+
+  const seen = new Set<string>();
+  const rows: RowPlan[] = [];
+
+  for (let i = 1; i < grid.length; i++) {
+    const r = grid[i];
+    const nama = clean(r[namaCol] ?? "", 16).toUpperCase();
+    const parsedTingkat = tingkatCol !== undefined ? Number(clean(r[tingkatCol] ?? "", 4).replace(/\D/g, "")) : NaN;
+    const tingkat = !isNaN(parsedTingkat) && parsedTingkat > 0
+      ? parsedTingkat
+      : Number(nama.match(/\d+/)?.[0] ?? 7);
+    const deskripsi = descCol !== undefined ? clean(r[descCol] ?? "", 255) : "";
+
+    let status: RowPlan["status"] = "OK";
+    let reason = "";
+    if (!nama) {
+      status = "ERR";
+      reason = "nama rombel kosong";
+    } else if (seen.has(nama)) {
+      status = "ERR";
+      reason = "nama rombel duplikat dalam file";
+    }
+
+    if (status === "OK") seen.add(nama);
+    rows.push({
+      line: i + 1,
+      username: nama,
+      nama,
+      rombel: nama,
+      kelas: String(tingkat),
+      ruang: deskripsi || undefined,
+      status,
+      reason: reason || undefined,
+    });
+  }
   return { rows, problems };
 }
 

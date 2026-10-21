@@ -3,7 +3,7 @@
 // Password bawaan skrip ini:  Admin#5Tegal2026   (hash $2a$, diverifikasi app login).
 //
 // Jalankan di server (setelah schema termigrate):
-//   cd /var/www/lms && sudo -u deploy node --env-file=.env scripts-server/reset-admin.mjs
+//   cd /var/www/panglima && sudo -u deploy node --env-file=.env scripts-server/reset-admin.mjs
 import { PrismaClient } from "@prisma/client";
 
 const USERNAME = process.argv[2] ?? "admin";
