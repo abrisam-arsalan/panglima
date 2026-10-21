@@ -1,11 +1,2 @@
-* text=auto eol=lf
-*.sh text eol=lf
-*.ps1 text eol=crlf
-*.png binary
-*.jpg binary
-*.ico binary
-*.woff2 binary
-*.node binary
-*.so binary
-*.so.node binary
-*.wasm binary
+﻿* -text
+

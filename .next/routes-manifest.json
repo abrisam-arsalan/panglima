@@ -1,0 +1,228 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/file/[id]",
+      "regex": "^/api/file/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/file/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/templates/[kind]",
+      "regex": "^/api/templates/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPkind": "nxtPkind"
+      },
+      "namedRegex": "^/api/templates/(?<nxtPkind>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/tp/[assignmentId]",
+      "regex": "^/tp/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPassignmentId": "nxtPassignmentId"
+      },
+      "namedRegex": "^/tp/(?<nxtPassignmentId>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin/akun/guru",
+      "regex": "^/admin/akun/guru(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/akun/guru(?:/)?$"
+    },
+    {
+      "page": "/admin/akun/kelas",
+      "regex": "^/admin/akun/kelas(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/akun/kelas(?:/)?$"
+    },
+    {
+      "page": "/admin/akun/ortu",
+      "regex": "^/admin/akun/ortu(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/akun/ortu(?:/)?$"
+    },
+    {
+      "page": "/admin/akun/siswa",
+      "regex": "^/admin/akun/siswa(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/akun/siswa(?:/)?$"
+    },
+    {
+      "page": "/admin/import",
+      "regex": "^/admin/import(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/import(?:/)?$"
+    },
+    {
+      "page": "/admin/master",
+      "regex": "^/admin/master(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/master(?:/)?$"
+    },
+    {
+      "page": "/admin/penugasan",
+      "regex": "^/admin/penugasan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/penugasan(?:/)?$"
+    },
+    {
+      "page": "/admin/ujian",
+      "regex": "^/admin/ujian(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/ujian(?:/)?$"
+    },
+    {
+      "page": "/admin/users",
+      "regex": "^/admin/users(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/users(?:/)?$"
+    },
+    {
+      "page": "/change-pin",
+      "regex": "^/change\\-pin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/change\\-pin(?:/)?$"
+    },
+    {
+      "page": "/dashboard",
+      "regex": "^/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard(?:/)?$"
+    },
+    {
+      "page": "/healthz",
+      "regex": "^/healthz(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/healthz(?:/)?$"
+    },
+    {
+      "page": "/jadwal",
+      "regex": "^/jadwal(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/jadwal(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/materi",
+      "regex": "^/materi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/materi(?:/)?$"
+    },
+    {
+      "page": "/mpi",
+      "regex": "^/mpi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/mpi(?:/)?$"
+    },
+    {
+      "page": "/mpi/bank",
+      "regex": "^/mpi/bank(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/mpi/bank(?:/)?$"
+    },
+    {
+      "page": "/nilai",
+      "regex": "^/nilai(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/nilai(?:/)?$"
+    },
+    {
+      "page": "/notifikasi",
+      "regex": "^/notifikasi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/notifikasi(?:/)?$"
+    },
+    {
+      "page": "/pengumuman",
+      "regex": "^/pengumuman(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pengumuman(?:/)?$"
+    },
+    {
+      "page": "/presensi",
+      "regex": "^/presensi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/presensi(?:/)?$"
+    },
+    {
+      "page": "/rekap-presensi",
+      "regex": "^/rekap\\-presensi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/rekap\\-presensi(?:/)?$"
+    },
+    {
+      "page": "/tp",
+      "regex": "^/tp(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/tp(?:/)?$"
+    },
+    {
+      "page": "/tugas",
+      "regex": "^/tugas(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/tugas(?:/)?$"
+    },
+    {
+      "page": "/ujian",
+      "regex": "^/ujian(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ujian(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}
