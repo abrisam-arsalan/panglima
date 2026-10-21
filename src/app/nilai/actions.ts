@@ -85,8 +85,8 @@ export async function setReportScore(formData: FormData) {
   });
   await prisma.reportScore.upsert({
     where: { assignmentId_studentId: { assignmentId, studentId } },
-    create: { assignmentId, studentId, score: score! },
-    update: { score: score! },
+    create: { assignmentId, studentId, score: score!, isManual: true },
+    update: { score: score!, isManual: true },
   });
   await logAudit({
     userId: user.id, action: "RAPOR_KOREKSI", entity: "report_scores", entityId: String(studentId),

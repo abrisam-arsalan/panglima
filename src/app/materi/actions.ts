@@ -130,10 +130,10 @@ export async function markRead(formData: FormData) {
   if (!user || user.role !== "SISWA") throw new Error("Hanya siswa");
   const materialId = BigInt(String(formData.get("materialId") ?? "0"));
   const m = await prisma.material.findFirst({
-    where: { id: materialId, deletedAt: null },
+    where: { id: materialId, deletedAt: null, status: "TERBIT" },
     include: { assignment: { select: { classId: true } } },
   });
-  if (!m) throw new Error("Materi tidak ada");
+  if (!m) throw new Error("Materi tidak ada / belum terbit");
   if (user.classId !== m.assignment.classId) throw new Error("Bukan materi kelasmu");
   await prisma.materialRead.upsert({
     where: { materialId_userId: { materialId, userId: user.id } },

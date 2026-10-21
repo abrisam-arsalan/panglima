@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser, logAudit } from "@/lib/auth";
-import { notifyClass, createNotification } from "@/lib/notify";
+import { notifyClass } from "@/lib/notify";
 
 export async function createAnnouncement(formData: FormData) {
   const user = await getSessionUser();
@@ -32,16 +32,11 @@ export async function createAnnouncement(formData: FormData) {
   });
   await logAudit({ userId: user.id, action: "PENGUMUMAN_BARU", entity: "announcements", entityId: String(p.id) });
 
+  // Notifikasi hemat: KELAS → sebar ke anggota kelas (notifyClass batch);
+  // SEMUA (sekolah) → TIDAK sebar per-user (N+1 untuk ribuan akun).
+  // Halaman /pengumuman + badge di dashboard membaca Announcement langsung.
   if (classId) {
     await notifyClass(classId, "pengumuman", `📢 ${judul}`, "/pengumuman");
-  } else {
-    const allUsers = await prisma.user.findMany({
-      where: { role: { in: ["SISWA", "ORTU", "GURU"] }, isActive: true, deletedAt: null },
-      select: { id: true },
-    });
-    for (const u of allUsers) {
-      await createNotification(u.id, "pengumuman", `📢 ${judul}`, "/pengumuman");
-    }
   }
   revalidatePath("/pengumuman");
   redirect("/pengumuman");

@@ -6,7 +6,7 @@ import { classAssignments, currentSemester, studentClassId, teacherAssignments }
 import AppShell from "@/components/app-shell";
 import DangerSubmit from "@/components/danger-submit";
 import { DAYS } from "@/lib/notify";
-import { addSchedule, deleteSchedule } from "./actions";
+import { activateSchedule, addSchedule, deleteSchedule } from "./actions";
 import { importBulkAction } from "@/app/admin/akun/actions";
 
 import type { Prisma } from "@prisma/client";
@@ -116,9 +116,10 @@ async function loadSchedules(assignmentWhere: Prisma.AssignmentWhereInput) {
   });
 }
 
-function WeekView({ rows, today }: { rows: Awaited<ReturnType<typeof loadSchedules>>; today: number }) {
+function WeekView({ rows, today, showInactive = false }: { rows: Awaited<ReturnType<typeof loadSchedules>>; today: number; showInactive?: boolean }) {
   const byDay = new Map<number, typeof rows>();
   for (const r of rows) {
+    if (!showInactive && r.isActive === false) continue; // nonaktif: hanya admin di panel kelola
     const arr = byDay.get(r.day) ?? [];
     arr.push(r);
     byDay.set(r.day, arr);
@@ -258,15 +259,30 @@ export default async function JadwalPage({
           </div>
         )}
 
-        <WeekView rows={rows} today={today} />
+        <WeekView rows={rows} today={today} showInactive={user.role === "ADMIN"} />
         {user.role === "ADMIN" && rows.length > 0 && (
           <div className="card">
-            <div className="card-head"><h2>Hapus Baris Jadwal</h2></div>
+            <div className="card-head"><h2>Nonaktifkan / Aktifkan Baris Jadwal</h2></div>
             <div className="card-body">
+              <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+                Jadwal yang punya riwayat presensi DINONAKTIFKAN (riwayat aman), bukan dihapus.
+                Jadwal tanpa sesi bisa dihapus fisik bila perlu.
+              </p>
               {rows.map((s) => (
                 <div key={String(s.id)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 8, padding: "6px 0", borderBottom: "1px dashed var(--ink)" }}>
-                  <span className="pill" style={{ minHeight: 36, display: "inline-flex", alignItems: "center" }}>{DAYS[s.day]} : {s.startTime} – {s.endTime} {s.room ? `(${s.room})` : ""}</span>
-                  <DangerSubmit action={deleteSchedule} hidden={{ id: String(s.id), assignmentId: a }} confirmText="Hapus baris jadwal ini?" btnClass="btn btn-danger btn-sm btn-block-mobile">✕ Hapus</DangerSubmit>
+                  <span className="pill" style={{ minHeight: 36, display: "inline-flex", alignItems: "center" }}>
+                    {DAYS[s.day]} : {s.startTime} – {s.endTime} {s.room ? `(${s.room})` : ""}
+                    {(s as { isActive?: boolean }).isActive === false && " ⏸️ NONAKTIF"}
+                  </span>
+                  {(s as { isActive?: boolean }).isActive === false ? (
+                    <form action={activateSchedule}>
+                      <input type="hidden" name="id" value={String(s.id)} />
+                      <input type="hidden" name="assignmentId" value={a} />
+                      <button className="btn btn-sm btn-green btn-block-mobile" type="submit">▶️ Aktifkan</button>
+                    </form>
+                  ) : (
+                    <DangerSubmit action={deleteSchedule} hidden={{ id: String(s.id), assignmentId: a }} confirmText="Nonaktifkan baris jadwal ini? (riwayat presensi tetap aman)" btnClass="btn btn-sm btn-block-mobile">⏸️ Nonaktifkan</DangerSubmit>
+                  )}
                 </div>
               ))}
             </div>

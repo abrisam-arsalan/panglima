@@ -181,10 +181,11 @@ export default async function PresensiPage({
     );
   }
 
-  // Tampilan Beranda Presensi: Jadwal Hari Ini & Jadwal Mengajar
+  // Tampilan Beranda Presensi: Jadwal Hari Ini & Jadwal Mengajar.
+  // Hanya jadwal AKTIF — nonaktif disembunyikan tapi sesinya tetap di rekap.
   const teacherWhere = user.role === "GURU" ? { teacherId: user.id } : {};
   const schedules = await prisma.schedule.findMany({
-    where: { assignment: teacherWhere },
+    where: { isActive: true, assignment: teacherWhere },
     include: {
       assignment: {
         include: { class: true, subject: true, teacher: true },

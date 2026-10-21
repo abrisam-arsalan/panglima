@@ -45,15 +45,24 @@ export async function computeAutoTpScores(assignmentId: bigint) {
   return { buckets, tpIds: tps.map((t) => t.id) };
 }
 
-/** Rapor = rata-rata skor TP siswa (MANUAL/AUTO tergabung); null bila belum ada. */
+/**
+ * Rapor = rata-rata skor TP siswa (MANUAL/AUTO tergabung); null bila belum ada.
+ * Baris isManual=true (koreksi guru via setReportScore) TIDAK disentuh —
+ * koreksi adalah keputusan, bukan hitungan yang boleh dihitung ulang.
+ */
 export async function recomputeReports(assignmentId: bigint) {
-  const [tpScores, students] = await Promise.all([
+  const [tpScores, students, manualLocks] = await Promise.all([
     prisma.tpScore.findMany({ where: { tp: { assignmentId } } }),
     prisma.user.findMany({
       where: { classRef: { assignments: { some: { id: assignmentId } } }, role: "SISWA", deletedAt: null, isActive: true },
       select: { id: true },
     }),
+    prisma.reportScore.findMany({
+      where: { assignmentId, isManual: true },
+      select: { studentId: true },
+    }),
   ]);
+  const locked = new Set(manualLocks.map((r) => String(r.studentId)));
   const perSiswa = new Map<string, number[]>();
   for (const s of tpScores) {
     const arr = perSiswa.get(String(s.studentId)) ?? [];
@@ -62,6 +71,7 @@ export async function recomputeReports(assignmentId: bigint) {
   }
   let n = 0;
   for (const st of students) {
+    if (locked.has(String(st.id))) continue; // koreksi guru menang
     const arr = perSiswa.get(String(st.id));
     if (arr && arr.length) {
       const avg = Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 100) / 100;
