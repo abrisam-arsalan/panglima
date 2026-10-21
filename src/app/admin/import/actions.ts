@@ -9,7 +9,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireUser, logAudit } from "@/lib/auth";
 import { currentSemester } from "@/lib/academic";
-import { planSiswa, planGuru, planJadwal, planOrtu, type ImportKind } from "@/lib/importer";
+import { planSiswa, planGuru, planJadwal, planOrtu, planKelas, type ImportKind } from "@/lib/importer";
 import { syncStudentsToCbt } from "@/lib/cbt-sync";
 
 const IMPORT_DIR = path.resolve("storage/imports");
@@ -20,10 +20,18 @@ async function guard() {
   return u;
 }
 
+function toKind(raw: string): ImportKind {
+  if (raw === "guru") return "guru";
+  if (raw === "jadwal") return "jadwal";
+  if (raw === "ortu") return "ortu";
+  if (raw === "kelas") return "kelas";
+  return "siswa";
+}
+
 export async function uploadPreview(formData: FormData) {
   await guard();
   const rawKind = String(formData.get("kind") ?? "");
-  const kind: ImportKind = rawKind === "guru" ? "guru" : rawKind === "jadwal" ? "jadwal" : rawKind === "ortu" ? "ortu" : "siswa";
+  const kind = toKind(rawKind);
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) redirect("/admin/import?err=Kosong");
   if (file.size > 2 * 1024 * 1024) redirect("/admin/import?err=Maksimum+2MB");
@@ -35,6 +43,8 @@ export async function uploadPreview(formData: FormData) {
       ? planGuru(text)
       : kind === "ortu"
       ? planOrtu(text)
+      : kind === "kelas"
+      ? planKelas(text)
       : planJadwal(text);
   if (problems.length) redirect(`/admin/import?err=${encodeURIComponent(problems.join(" · "))}`);
   if (!rows.length) redirect("/admin/import?err=Tidak+ada+baris+data");
@@ -49,7 +59,7 @@ export async function commitImport(formData: FormData) {
   const admin = await guard();
   const rev = String(formData.get("rev") ?? "").replace(/[^0-9a-f]/g, "").slice(0, 32);
   const rawKind = String(formData.get("kind") ?? "");
-  const kind: ImportKind = rawKind === "guru" ? "guru" : rawKind === "jadwal" ? "jadwal" : rawKind === "ortu" ? "ortu" : "siswa";
+  const kind = toKind(rawKind);
   const tmpPass = String(formData.get("tmpPass") ?? "").trim() || "123456";
   const file = path.join(IMPORT_DIR, `${rev}.csv`);
   let text: string;
@@ -66,6 +76,8 @@ export async function commitImport(formData: FormData) {
       ? planGuru(text)
       : kind === "ortu"
       ? planOrtu(text)
+      : kind === "kelas"
+      ? planKelas(text)
       : planJadwal(text);
 
   const ctx = await currentSemester();
@@ -212,6 +224,43 @@ export async function commitImport(formData: FormData) {
     revalidatePath("/jadwal");
     revalidatePath("/admin/master");
     redirect(`/admin/import?done=${rev}&kind=jadwal`);
+  }
+
+  // Kelas flow — buat rombel tahun ajaran aktif (idempoten per nama).
+  if (kind === "kelas") {
+    for (const r of rows) {
+      if (r.status === "ERR") {
+        result.skipped++;
+        result.errors.push(`baris ${r.line}: ${r.reason}`);
+        continue;
+      }
+      const name = r.rombel!;
+      const tingkat = Number(r.kelas ?? 7);
+      const exist = await prisma.class.findFirst({
+        where: { name, academicYearId: ctx.year.id },
+        select: { id: true },
+      });
+      if (exist) {
+        result.existing++;
+        continue;
+      }
+      await prisma.class.create({
+        data: { name, tingkat, academicYearId: ctx.year.id, isActive: true },
+      });
+      result.created++;
+      result.rombelBaru.push(name);
+    }
+    await logAudit({
+      userId: admin.id,
+      action: "IMPORT_CSV",
+      entity: "classes",
+      entityId: rev,
+      detail: { kind, ...result },
+    });
+    await fs.rm(file, { force: true });
+    await fs.writeFile(path.join(IMPORT_DIR, `${rev}.done.json`), JSON.stringify(result));
+    revalidatePath("/admin/master");
+    redirect(`/admin/import?done=${rev}&kind=kelas`);
   }
 
   // Siswa / Guru flow
