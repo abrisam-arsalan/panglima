@@ -100,6 +100,12 @@
       "namedRegex": "^/admin/penugasan(?:/)?$"
     },
     {
+      "page": "/admin/setup",
+      "regex": "^/admin/setup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/setup(?:/)?$"
+    },
+    {
       "page": "/admin/ujian",
       "regex": "^/admin/ujian(?:/)?$",
       "routeKeys": {},
