@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/auth";
+import { requireAdminSurface } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/app-shell";
 import AccountNav from "@/components/account-nav";
@@ -20,7 +20,7 @@ export default async function AkunOrtuPage({
     skipped?: string;
   }>;
 }) {
-  const me = await requireRole(["ADMIN"]);
+  const me = await requireAdminSurface("admin/akun/ortu");
   const { q, err, msg, done, created, existing, skipped } = await searchParams;
 
   const parents = await prisma.user.findMany({
@@ -56,20 +56,20 @@ export default async function AkunOrtuPage({
       </nav>
 
       <div className="page-head">
-        <h1>Data Orang Tua Siswa 👨‍👩‍👧</h1>
+        <h1>Data Orang Tua Siswa ðŸ‘¨â€ðŸ‘©â€ðŸ‘§</h1>
         <p>Kelola akun wali/orang tua siswa untuk memantau presensi, tugas, dan rekap nilai anak.</p>
       </div>
 
       <AccountNav activeTab="ortu" />
 
-      {msg && <div className="alert alert-success">✓ {decodeURIComponent(msg)}</div>}
-      {err && <div className="alert alert-error">✕ {decodeURIComponent(err)}</div>}
+      {msg && <div className="alert alert-success">âœ“ {decodeURIComponent(msg)}</div>}
+      {err && <div className="alert alert-error">âœ• {decodeURIComponent(err)}</div>}
       {done && (
         <div className="alert alert-info" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <span><b>Hasil Impor Orang Tua:</b></span>
-          <span className="badge badge-green">✓ Ditambahkan: {created ?? 0}</span>
-          <span className="badge badge-yellow">ℹ Sudah Ada: {existing ?? 0}</span>
-          {Number(skipped) > 0 && <span className="badge badge-red">✕ Gagal: {skipped}</span>}
+          <span className="badge badge-green">âœ“ Ditambahkan: {created ?? 0}</span>
+          <span className="badge badge-yellow">â„¹ Sudah Ada: {existing ?? 0}</span>
+          {Number(skipped) > 0 && <span className="badge badge-red">âœ• Gagal: {skipped}</span>}
         </div>
       )}
 
@@ -78,7 +78,7 @@ export default async function AkunOrtuPage({
         {/* Bulk Upload Ortu */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2>📥 Impor Massal Orang Tua (CSV)</h2>
+            <h2>ðŸ“¥ Impor Massal Orang Tua (CSV)</h2>
             <a href="/api/templates/ortu" download className="btn btn-sm btn-yellow" style={{ textDecoration: "none" }}>
               Unduh Template
             </a>
@@ -92,7 +92,7 @@ export default async function AkunOrtuPage({
               <input type="hidden" name="redirectUrl" value="/admin/akun/ortu" />
               <input className="input" type="file" name="file" accept=".csv,text/csv" required style={{ minHeight: 38 }} />
               <button className="btn btn-primary" type="submit">
-                📤 Unggah &amp; Impor Orang Tua
+                ðŸ“¤ Unggah &amp; Impor Orang Tua
               </button>
             </form>
           </div>
@@ -101,7 +101,7 @@ export default async function AkunOrtuPage({
         {/* Tambah Ortu Manual */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head">
-            <h2>➕ Tambah Orang Tua Manual</h2>
+            <h2>âž• Tambah Orang Tua Manual</h2>
           </div>
           <div className="card-body">
             <form action={addParentAction} style={{ display: "grid", gap: 10 }}>
@@ -196,7 +196,7 @@ export default async function AkunOrtuPage({
                           ))}
                         </div>
                       ) : (
-                        <span className="muted">— belum terhubung anak —</span>
+                        <span className="muted">â€” belum terhubung anak â€”</span>
                       )}
                     </td>
                     <td>
@@ -205,7 +205,7 @@ export default async function AkunOrtuPage({
                       </span>
                     </td>
                     <td>
-                      <code>{p.pinCipher || "—"}</code>
+                      <code>{p.pinCipher || "â€”"}</code>
                     </td>
                     <td>
                       <span className={`badge ${p.isActive ? "badge-green" : "badge-red"}`}>

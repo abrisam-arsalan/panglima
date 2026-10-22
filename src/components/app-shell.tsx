@@ -105,7 +105,18 @@ export default async function AppShell({
             </nav>
           </aside>
         ) : null}
-        <main className="content">{children}</main>
+        <main className="content">
+          {isAdmin && active.startsWith("/admin") && (
+            <div
+              className="badge badge-yellow"
+              style={{ display: "inline-flex", alignItems: "center", minHeight: 36, marginBottom: 12, fontSize: 13 }}
+              title="Permukaan admin — terpisah dari akses guru/siswa/orang tua"
+            >
+              🔒 MODE ADMIN — {user.nama.split(",")[0]}
+            </div>
+          )}
+          {children}
+        </main>
       </div>
 
       {!isAdmin ? (

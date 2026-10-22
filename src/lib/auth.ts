@@ -97,6 +97,29 @@ export async function requireRole(roles: Role[]): Promise<User> {
   return user;
 }
 
+/**
+ * Gerbang permukaan ADMIN — satu pintu untuk SELURUH route /admin/*.
+ * Beda dari requireRole(["ADMIN"]): non-admin DITOLAK TEGAS (403, bukan
+ * redirect diam-diam ke dashboard) + tercatat di audit. Dipakai di setiap
+ * page & action admin agar tidak ada jalur yang lolos karena lupa guard.
+ */
+export async function requireAdminSurface(area: string): Promise<User> {
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+  if (user.mustChangePin) redirect("/change-pin");
+  if (user.role !== "ADMIN") {
+    await logAudit({
+      userId: user.id,
+      action: "ADMIN_DITOLAK",
+      entity: "admin",
+      entityId: area,
+      detail: { role: user.role },
+    }).catch(() => {});
+    throw new Error(`Akses admin ditolak (${area})`);
+  }
+  return user;
+}
+
 export async function endSession(): Promise<void> {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;

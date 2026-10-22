@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/auth";
+import { requireAdminSurface } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { currentSemester } from "@/lib/academic";
 import AppShell from "@/components/app-shell";
@@ -13,7 +13,7 @@ export default async function AdminPenugasanPage({
 }: {
   searchParams: Promise<{ err?: string; msg?: string }>;
 }) {
-  const me = await requireRole(["ADMIN"]);
+  const me = await requireAdminSurface("admin/penugasan");
   const { err, msg } = await searchParams;
   const ctx = await currentSemester();
 
@@ -54,15 +54,15 @@ export default async function AdminPenugasanPage({
       </nav>
 
       <div className="page-head">
-        <h1>Penugasan Mengajar &amp; Pembagian Kelas 📋</h1>
+        <h1>Penugasan Mengajar &amp; Pembagian Kelas ðŸ“‹</h1>
         <p>
           Atur penugasan guru per mata pelajaran dan rombongan belajar, penentuan wali kelas, serta kurikulum mata pelajaran.
           {ctx ? ` (Semester Aktif: ${ctx.year.name} / ${ctx.semester.name})` : " (Tahun ajaran aktif belum ditentukan)"}
         </p>
       </div>
 
-      {msg && <div className="alert alert-success">✓ {decodeURIComponent(msg)}</div>}
-      {err && <div className="alert alert-error">✕ {decodeURIComponent(err)}</div>}
+      {msg && <div className="alert alert-success">âœ“ {decodeURIComponent(msg)}</div>}
+      {err && <div className="alert alert-error">âœ• {decodeURIComponent(err)}</div>}
 
       {/* STATS OVERVIEW */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 20 }}>
@@ -88,14 +88,14 @@ export default async function AdminPenugasanPage({
       {ctx ? (
         <div className="card" style={{ marginBottom: 20 }}>
           <div className="card-head">
-            <h2>➕ Buat Penugasan Guru Baru</h2>
+            <h2>âž• Buat Penugasan Guru Baru</h2>
           </div>
           <div className="card-body">
             <form action={createAssignment} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr)) 120px", gap: 12, alignItems: "end" }}>
               <div className="field" style={{ margin: 0 }}>
                 <label className="field-label">Guru Pengampu</label>
                 <select className="input" name="teacherUserId" required defaultValue="" style={{ minHeight: 40 }}>
-                  <option value="" disabled>— Pilih Guru —</option>
+                  <option value="" disabled>â€” Pilih Guru â€”</option>
                   {teachers.map((t) => (
                     <option key={String(t.id)} value={String(t.id)}>
                       {t.nama}
@@ -107,7 +107,7 @@ export default async function AdminPenugasanPage({
               <div className="field" style={{ margin: 0 }}>
                 <label className="field-label">Mata Pelajaran</label>
                 <select className="input" name="subjectId" required defaultValue="" style={{ minHeight: 40 }}>
-                  <option value="" disabled>— Pilih Mata Pelajaran —</option>
+                  <option value="" disabled>â€” Pilih Mata Pelajaran â€”</option>
                   {subjects.map((s) => (
                     <option key={String(s.id)} value={String(s.id)}>
                       {s.name} ({s.code})
@@ -119,7 +119,7 @@ export default async function AdminPenugasanPage({
               <div className="field" style={{ margin: 0 }}>
                 <label className="field-label">Rombel (Kelas)</label>
                 <select className="input" name="classId" required defaultValue="" style={{ minHeight: 40 }}>
-                  <option value="" disabled>— Pilih Rombel —</option>
+                  <option value="" disabled>â€” Pilih Rombel â€”</option>
                   {classes.map((k) => (
                     <option key={String(k.id)} value={String(k.id)}>
                       Kelas {k.name}
@@ -136,7 +136,7 @@ export default async function AdminPenugasanPage({
         </div>
       ) : (
         <div className="alert alert-yellow" style={{ marginBottom: 20 }}>
-          ⚠️ Tahun ajaran dan semester aktif belum ditentukan di sistem. Mohon atur semester aktif terlebih dahulu.
+          âš ï¸ Tahun ajaran dan semester aktif belum ditentukan di sistem. Mohon atur semester aktif terlebih dahulu.
         </div>
       )}
 
@@ -167,9 +167,9 @@ export default async function AdminPenugasanPage({
                     <b>{a.subject.name}</b>
                     <span className="muted" style={{ marginLeft: 6, fontSize: 12 }}>({a.subject.code})</span>
                   </td>
-                  <td>{a.teacher?.nama ?? "—"}</td>
+                  <td>{a.teacher?.nama ?? "â€”"}</td>
                   <td className="muted" style={{ fontSize: 13 }}>
-                    🎯 {a._count.learningTargets} TP · 📖 {a._count.materials} Materi · 📝 {a._count.tasks} Tugas · ⏰ {a._count.schedules} Jam
+                    ðŸŽ¯ {a._count.learningTargets} TP Â· ðŸ“– {a._count.materials} Materi Â· ðŸ“ {a._count.tasks} Tugas Â· â° {a._count.schedules} Jam
                   </td>
                   <td style={{ textAlign: "right" }}>
                     <div style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
@@ -188,7 +188,7 @@ export default async function AdminPenugasanPage({
                         confirmText={`Hapus penugasan ${a.class.name} - ${a.subject.name} (${a.teacher?.nama})?`}
                         btnClass="btn btn-sm"
                       >
-                        ✕
+                        âœ•
                       </DangerSubmit>
                     </div>
                   </td>
@@ -211,7 +211,7 @@ export default async function AdminPenugasanPage({
         {/* KELOLA WALI KELAS */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head">
-            <h2>Penetapan Wali Kelas 👨‍🏫</h2>
+            <h2>Penetapan Wali Kelas ðŸ‘¨â€ðŸ«</h2>
           </div>
           <div className="table-wrap">
             <table className="table">
@@ -226,12 +226,12 @@ export default async function AdminPenugasanPage({
                 {classes.map((k) => (
                   <tr key={String(k.id)}>
                     <td><b>{k.name}</b></td>
-                    <td>{k.homeroom?.nama ? <span className="badge badge-green">{k.homeroom.nama}</span> : <span className="muted">— belum ada —</span>}</td>
+                    <td>{k.homeroom?.nama ? <span className="badge badge-green">{k.homeroom.nama}</span> : <span className="muted">â€” belum ada â€”</span>}</td>
                     <td>
                       <form action={setHomeroom} style={{ display: "flex", gap: 6 }}>
                         <input type="hidden" name="classId" value={String(k.id)} />
                         <select className="input" style={{ minHeight: 34, fontSize: 13 }} name="homeroomUserId" defaultValue={k.homeroom?.id ? String(k.homeroom.id) : ""}>
-                          <option value="">— Kosongkan —</option>
+                          <option value="">â€” Kosongkan â€”</option>
                           {teachers.map((t) => (
                             <option key={String(t.id)} value={String(t.id)}>
                               {t.nama}
@@ -260,7 +260,7 @@ export default async function AdminPenugasanPage({
         {/* KELOLA MATA PELAJARAN */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head">
-            <h2>➕ Mata Pelajaran Kurikulum</h2>
+            <h2>âž• Mata Pelajaran Kurikulum</h2>
           </div>
           <div className="card-body">
             <form action={addSubject} style={{ display: "grid", gridTemplateColumns: "1fr 90px 100px", gap: 8, marginBottom: 16 }}>

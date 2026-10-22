@@ -31,6 +31,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/jadwal", icon: "🗓️", label: "Jadwal" },
     { href: "/pengumuman", icon: "📢", label: "Pengumuman" },
     { href: "/admin/ujian", icon: "📋", label: "Ujian" },
+    { href: "/admin/cetak", icon: "🖨️", label: "Cetak Nilai" },
     { href: "/admin/setup", icon: "🛠️", label: "Setup Awal" },
   ],
   KEPSEK: [

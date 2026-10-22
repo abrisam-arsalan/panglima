@@ -497,6 +497,7 @@ model ManualAssessment {
   tp         LearningTarget? @relation(fields: [tpId], references: [id], onDelete: SetNull)
   grades     Grade[]
 
+  @@unique([assignmentId, nama]) // idempoten impor PTS per label ("PTS Ganjil 26/27")
   @@map("manual_assessments")
 }
 
@@ -518,6 +519,7 @@ model Grade {
   gradedBy         User              @relation("GradesGiven", fields: [gradedById], references: [id], onDelete: Restrict)
 
   @@index([manualAssessmentId, studentId])
+  @@unique([manualAssessmentId, studentId]) // satu nilai per siswa per asesmen (impor ulang = update)
   @@map("grades")
 }
 
