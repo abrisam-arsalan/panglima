@@ -109,7 +109,7 @@ export default async function DashboardPage() {
   return (
     <AppShell user={user} active="/dashboard">
       <div className="page-head">
-        <h1>Selamat datang, {user.nama.split(",")[0]} 👋</h1>
+        <h1 style={{ textTransform: "none" }}>Halo, {user.nama.split(",")[0]}</h1>
         {user.role === "ADMIN" && (
           <p>Total akun terdaftar: <strong>{totalUser}</strong>. <a href="/admin/akun/siswa">Kelola akun →</a></p>
         )}
@@ -206,10 +206,10 @@ export default async function DashboardPage() {
       )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "16px 0 12px" }}>
-        <h2 style={{ margin: 0 }}>Modul Portal Panglima</h2>
+        <h2 style={{ margin: 0 }}>Modul</h2>
         <span className="pill">{user.role}</span>
       </div>
-      <div className="grid">
+      <nav className="card modul-list" aria-label="Modul portal" style={{ margin: 0 }}>
         {(() => {
           const userNav = NAV[user.role] ?? [];
           const navOrder = new Map(userNav.map((n, i) => [n.href, i]));
@@ -217,28 +217,28 @@ export default async function DashboardPage() {
             const adminUjianIdx = userNav.findIndex((n) => n.href === "/admin/ujian");
             if (adminUjianIdx !== -1) navOrder.set("/ujian", adminUjianIdx);
           }
-          const userModules = MODULES.filter((m) => m.roles.includes(user.role)).sort((a, b) => {
+          const seen = new Set<string>();
+          const userModules = MODULES.filter((m) => {
+            if (!m.roles.includes(user.role) || seen.has(m.href)) return false;
+            seen.add(m.href);
+            return true;
+          }).sort((a, b) => {
             const ordA = navOrder.has(a.href) ? navOrder.get(a.href)! : 999;
             const ordB = navOrder.has(b.href) ? navOrder.get(b.href)! : 999;
             return ordA - ordB;
           });
           return userModules.map((m) => (
-            <a className="card" key={m.nama} href={m.href} style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-              <div className="card-body">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                  <span style={{ fontSize: 28 }}>{m.icon}</span>
-                  <span className="badge badge-yellow">{m.status}</span>
-                </div>
-                <h2 style={{ marginBottom: 4, fontSize: 16 }}>{m.nama}</h2>
-                <p className="muted" style={{ fontSize: 13 }}>{m.desc}</p>
-              </div>
-              <div style={{ padding: "0 16px 14px", textAlign: "right" }}>
-                <span style={{ fontWeight: 900, fontSize: 13 }}>Buka Modul →</span>
-              </div>
+            <a className="modul-row" key={m.href} href={m.href}>
+              <span className="modul-ico" aria-hidden="true">{m.icon}</span>
+              <span className="modul-text">
+                <b>{m.nama}</b>
+                <small className="muted">{m.desc}</small>
+              </span>
+              <span className="modul-go" aria-hidden="true">›</span>
             </a>
           ));
         })()}
-      </div>
+      </nav>
     </AppShell>
   );
 }
