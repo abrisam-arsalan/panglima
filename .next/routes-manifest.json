@@ -102,6 +102,12 @@
       "namedRegex": "^/admin/import(?:/)?$"
     },
     {
+      "page": "/admin/laporan",
+      "regex": "^/admin/laporan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/laporan(?:/)?$"
+    },
+    {
       "page": "/admin/master",
       "regex": "^/admin/master(?:/)?$",
       "routeKeys": {},
@@ -226,6 +232,12 @@
       "regex": "^/ujian(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/ujian(?:/)?$"
+    },
+    {
+      "page": "/umpan-balik",
+      "regex": "^/umpan\\-balik(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/umpan\\-balik(?:/)?$"
     }
   ],
   "dataRoutes": [],
