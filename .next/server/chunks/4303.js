@@ -1,0 +1,1 @@
+"use strict";exports.id=4303,exports.ids=[4303],exports.modules={64303:(a,b,c)=>{function d(a){let b=String(a??"").trim();if(!/^\d+$/.test(b))return null;try{return BigInt(b)}catch{return null}}function e(a,b){let c=String(a??"").trim();return!c.startsWith("/")||c.startsWith("//")||c.includes("..")||/[\r\n]/.test(c)?b:c}c.d(b,{n:()=>e,toBigInt:()=>d}),c(82161)}};
