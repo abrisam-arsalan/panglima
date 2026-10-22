@@ -48,9 +48,11 @@ export async function addTemplate(formData: FormData) {
   if (!user || user.role !== "ADMIN") throw new Error("Hanya admin");
   const label = String(formData.get("label") ?? "").trim().slice(0, 120);
   if (!label) redirect("/admin/laporan?err=" + encodeURIComponent("Label templat wajib diisi"));
+  const sasaranRaw = String(formData.get("sasaran") ?? "SEMUA");
+  const sasaran = sasaranRaw === "ORTU" || sasaranRaw === "SISWA" ? sasaranRaw : "SEMUA";
   const max = await prisma.feedbackTemplate.aggregate({ _max: { urutan: true } });
   await prisma.feedbackTemplate.create({
-    data: { label, urutan: (max._max.urutan ?? 0) + 1 },
+    data: { label, sasaran, urutan: (max._max.urutan ?? 0) + 1 },
   });
   await logAudit({ userId: user.id, action: "FEEDBACK_TEMPLAT_TAMBAH", entity: "feedback_templates", entityId: label });
   revalidatePath("/admin/laporan");

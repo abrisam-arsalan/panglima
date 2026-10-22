@@ -16,18 +16,20 @@ const STATUS = ["BARU", "DIBACA", "DITINDAKLANJUTI"] as const;
 export default async function AdminLaporanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; guru?: string; msg?: string; err?: string }>;
+  searchParams: Promise<{ status?: string; guru?: string; sumber?: string; msg?: string; err?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   if (user.role !== "ADMIN" && user.role !== "KEPSEK") redirect("/dashboard");
   const q = await searchParams;
   const statusFilter = STATUS.includes(q.status as (typeof STATUS)[number]) ? q.status! : "";
+  const sumberFilter = q.sumber === "ORTU" || q.sumber === "SISWA" ? q.sumber : "";
 
   const [items, teachers, templates, counts] = await Promise.all([
     prisma.parentFeedback.findMany({
       where: {
         ...(statusFilter ? { status: statusFilter } : {}),
+        ...(sumberFilter ? { sumber: sumberFilter } : {}),
         ...(q.guru ? { teacherId: BigInt(q.guru) } : {}),
       },
       include: {
@@ -58,8 +60,8 @@ export default async function AdminLaporanPage({
       </nav>
 
       <div className="page-head">
-        <h1>Laporan Umpan Balik Ortu 💬</h1>
-        <p>Masukan orang tua untuk guru — bahan laporan ke kepala sekolah. Tidak terlihat oleh guru.</p>
+        <h1>Laporan Umpan Balik 💬</h1>
+        <p>Masukan ortu &amp; siswa untuk guru — bahan laporan ke kepala sekolah. Tidak terlihat oleh guru.</p>
       </div>
 
       {q.msg && <div className="alert alert-success">✓ {decodeURIComponent(q.msg)}</div>}
@@ -83,6 +85,11 @@ export default async function AdminLaporanPage({
                 <option key={String(t.id)} value={String(t.id)}>{t.nama}</option>
               ))}
             </select>
+            <select name="sumber" className="input" defaultValue={sumberFilter} style={{ minHeight: 44 }}>
+              <option value="">Ortu + Siswa</option>
+              <option value="ORTU">Ortu saja</option>
+              <option value="SISWA">Siswa saja</option>
+            </select>
             <button className="btn btn-sm btn-primary" type="submit" style={{ minHeight: 44 }}>Filter</button>
           </form>
         </div>
@@ -97,7 +104,13 @@ export default async function AdminLaporanPage({
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                 <div>
                   <b>Untuk: {r.teacher.nama}</b>
-                  <span className="meta"> · dari {r.parent.nama}{r.child ? ` (ortu ${r.child.nama})` : ""}</span>
+                  <span className="meta">
+                    {" "}· dari {r.parent.nama}
+                    {r.sumber === "SISWA" ? ` (siswa${r.child ? ` ${r.child.nama}` : ""})` : r.child ? ` (ortu ${r.child.nama})` : " (ortu)"}
+                  </span>
+                  <span className={`badge ${r.sumber === "SISWA" ? "badge-green" : "badge-yellow"}`} style={{ marginLeft: 6 }}>
+                    {r.sumber}
+                  </span>
                 </div>
                 <span className={`badge ${r.status === "BARU" ? "badge-yellow" : r.status === "DIBACA" ? "badge-green" : "badge-neutral"}`}>
                   {r.status}
@@ -138,13 +151,20 @@ export default async function AdminLaporanPage({
         <div className="card">
           <div className="card-head"><h2>Kelola Templat Feedback</h2></div>
           <div className="card-body">
-            <form action={addTemplate} style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-              <input name="label" className="input" placeholder="Label templat baru…" required maxLength={120} style={{ minHeight: 44, flex: 1 }} />
+            <form action={addTemplate} style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+              <input name="label" className="input" placeholder="Label templat baru…" required maxLength={120} style={{ minHeight: 44, flex: "2 1 200px" }} />
+              <select name="sasaran" className="input" defaultValue="SEMUA" style={{ minHeight: 44, flex: "1 1 140px" }}>
+                <option value="SEMUA">Ortu + Siswa</option>
+                <option value="ORTU">Ortu saja</option>
+                <option value="SISWA">Siswa saja</option>
+              </select>
               <button className="btn btn-sm btn-primary" type="submit" style={{ minHeight: 44 }}>Tambah</button>
             </form>
             {templates.map((t) => (
               <div key={String(t.id)} className="list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "8px 12px", marginBottom: 6 }}>
-                <span style={{ opacity: t.isActive ? 1 : 0.5 }}>{t.label}</span>
+                <span style={{ opacity: t.isActive ? 1 : 0.5 }}>
+                  {t.label} <span className="meta">[{t.sasaran}]</span>
+                </span>
                 <form action={toggleTemplate}>
                   <input type="hidden" name="id" value={String(t.id)} />
                   <button className="btn btn-sm" type="submit" style={{ minHeight: 40 }}>

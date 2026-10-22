@@ -6,13 +6,17 @@ import { prisma } from "@/lib/prisma";
 import { getSessionUser, logAudit } from "@/lib/auth";
 
 /**
- * Kirim umpan balik ortu → guru. Masuk sebagai laporan BARU untuk admin/kepsek.
- * Guru TIDAK diberi notifikasi langsung (keputusan produk: lindungi ortu,
- * tindak lanjut via kepsek/admin).
+ * Kirim umpan balik ORTU/SISWA → guru. Satu laporan BARU untuk admin/kepsek
+ * dengan penanda sumber (ORTU/SISWA). Guru TIDAK diberi notifikasi langsung
+ * (lindungi pengirim, tindak lanjut via kepsek/admin).
+ * Siswa: guru harus mengajar kelasnya; childId otomatis = diri sendiri.
  */
 export async function sendFeedback(formData: FormData) {
   const user = await getSessionUser();
-  if (!user || user.role !== "ORTU") throw new Error("Hanya orang tua");
+  if (!user || (user.role !== "ORTU" && user.role !== "SISWA")) {
+    throw new Error("Hanya orang tua & siswa");
+  }
+  const sumber = user.role === "SISWA" ? "SISWA" : "ORTU";
   const teacherId = BigInt(String(formData.get("teacherId") ?? "0"));
   const childIdRaw = String(formData.get("childId") ?? "").trim();
   // Gabung semua kotak catatan (note, note_1, ...) — ortu boleh tambah banyak.
@@ -37,9 +41,11 @@ export async function sendFeedback(formData: FormData) {
   });
   if (!teacher) throw new Error("Guru tidak valid");
 
-  // Anak harus benar milik ortu ini (bila dipilih).
+  // Anak: siswa = diri sendiri; ortu = harus miliknya (bila dipilih).
   let childId: bigint | null = null;
-  if (childIdRaw) {
+  if (sumber === "SISWA") {
+    childId = user.id;
+  } else if (childIdRaw) {
     const link = await prisma.parentLink.findFirst({
       where: { parentId: user.id, childId: BigInt(childIdRaw) },
       select: { childId: true },
@@ -54,10 +60,18 @@ export async function sendFeedback(formData: FormData) {
     childId = first?.childId ?? null;
   }
 
-  // Templat harus aktif (anti ID suntikan).
+  // Siswa hanya boleh menilai guru yang mengajar KELASNYA.
+  if (sumber === "SISWA" && user.classId) {
+    const mengajar = await prisma.assignment.count({
+      where: { teacherId: teacher.id, classId: user.classId },
+    });
+    if (!mengajar) throw new Error("Guru tersebut tidak mengajar kelasmu");
+  }
+
+  // Templat harus aktif + sesuai sasaran (SEMUA atau sasarannya) — anti suntikan.
   const validTemplates = templateIds.length
     ? await prisma.feedbackTemplate.findMany({
-        where: { id: { in: templateIds }, isActive: true },
+        where: { id: { in: templateIds }, isActive: true, sasaran: { in: ["SEMUA", sumber] } },
         select: { id: true },
       })
     : [];
@@ -70,6 +84,7 @@ export async function sendFeedback(formData: FormData) {
       parentId: user.id,
       teacherId: teacher.id,
       childId,
+      sumber,
       note: note || null,
       items: { create: validTemplates.map((t) => ({ templateId: t.id })) },
     },
@@ -80,7 +95,7 @@ export async function sendFeedback(formData: FormData) {
     action: "FEEDBACK_KIRIM",
     entity: "parent_feedbacks",
     entityId: String(fb.id),
-    detail: { guru: String(teacher.id), templat: validTemplates.length, adaCatatan: !!note },
+    detail: { sumber, guru: String(teacher.id), templat: validTemplates.length, adaCatatan: !!note },
   });
 
   // Beri tahu SEMUA admin (bukan guru): laporan baru masuk.
@@ -93,7 +108,7 @@ export async function sendFeedback(formData: FormData) {
       data: admins.map((a) => ({
         userId: a.id,
         kind: "feedback_baru",
-        message: `💬 Umpan balik ortu baru untuk guru (laporan #${fb.id})`,
+        message: `💬 Umpan balik ${sumber === "SISWA" ? "siswa" : "ortu"} baru untuk guru (laporan #${fb.id})`,
         link: "/admin/laporan",
       })),
       skipDuplicates: true,

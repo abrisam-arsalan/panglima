@@ -27,11 +27,13 @@ export default function FeedbackForm({
   anak,
   templat,
   action,
+  mode = "ORTU",
 }: {
   guru: Guru[];
   anak: Anak[];
   templat: Templat[];
   action: (formData: FormData) => void | Promise<void>;
+  mode?: "ORTU" | "SISWA";
 }) {
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [notes, setNotes] = useState<string[]>([""]);
@@ -57,7 +59,7 @@ export default function FeedbackForm({
         </label>
         <select name="teacherId" className="input" required defaultValue="" style={{ minHeight: 48 }}>
           <option value="" disabled>
-            — Pilih guru anak Anda —
+            {mode === "SISWA" ? "— Pilih gurumu —" : "— Pilih guru anak Anda —"}
           </option>
           {guru.map((g) => (
             <option key={g.id} value={g.id}>

@@ -60,6 +60,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/tugas", icon: "📝", label: "Tugas" },
     { href: "/nilai", icon: "📊", label: "Nilai" },
     { href: "/jadwal", icon: "🗓️", label: "Jadwal" },
+    { href: "/umpan-balik", icon: "💬", label: "Umpan Balik" },
     { href: "/ujian", icon: "📋", label: "Ujian" },
   ],
   ORTU: [

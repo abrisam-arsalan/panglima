@@ -7,27 +7,41 @@ import { sendFeedback } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Umpan balik ORTU + SISWA → guru (satu halaman, templat per sasaran).
+ * Siswa: guru kelasnya sendiri, fokus pembelajaran. Ortu: guru anaknya.
+ * Dibaca admin & kepsek sebagai laporan; guru tidak melihat langsung.
+ */
 export default async function UmpanBalikPage({
   searchParams,
 }: {
   searchParams: Promise<{ ok?: string; err?: string }>;
 }) {
   const user = await requireUser();
-  if (user.role !== "ORTU") {
+  if (user.role !== "ORTU" && user.role !== "SISWA") {
     return (
       <AppShell user={user} active="/umpan-balik">
-        <div className="empty">Halaman ini khusus orang tua.</div>
+        <div className="empty">Halaman ini khusus orang tua &amp; siswa.</div>
       </AppShell>
     );
   }
   const { ok, err } = await searchParams;
+  const sumber = user.role === "SISWA" ? "SISWA" : "ORTU";
 
-  // Anak ortu ini + guru yang mengajar kelas anak (assignment semester aktif).
-  const links = await prisma.parentLink.findMany({
-    where: { parentId: user.id },
-    include: { child: { select: { id: true, nama: true, classRef: { select: { id: true, name: true } } } } },
-  });
-  const classIds = [...new Set(links.map((l) => l.child.classRef?.id).filter((v): v is bigint => !!v))];
+  // Kelas terkait: siswa = kelasnya; ortu = kelas anak-anaknya.
+  let classIds: bigint[] = [];
+  let anak: { id: string; nama: string }[] = [];
+  if (sumber === "SISWA") {
+    if (user.classId) classIds = [user.classId];
+  } else {
+    const links = await prisma.parentLink.findMany({
+      where: { parentId: user.id },
+      include: { child: { select: { id: true, nama: true, classRef: { select: { id: true } } } } },
+    });
+    anak = links.map((l) => ({ id: String(l.childId), nama: l.child.nama }));
+    classIds = [...new Set(links.map((l) => l.child.classRef?.id).filter((v): v is bigint => !!v))];
+  }
+
   const assignments = classIds.length
     ? await prisma.assignment.findMany({
         where: { classId: { in: classIds } },
@@ -50,7 +64,7 @@ export default async function UmpanBalikPage({
   const guru = [...guruMap.values()].map((g) => ({ ...g, mapel: g.mapel.join(", ") }));
 
   const templat = await prisma.feedbackTemplate.findMany({
-    where: { isActive: true },
+    where: { isActive: true, sasaran: { in: ["SEMUA", sumber] } },
     orderBy: { urutan: "asc" },
     select: { id: true, label: true },
   });
@@ -62,6 +76,11 @@ export default async function UmpanBalikPage({
     take: 10,
   });
 
+  const judul = sumber === "SISWA" ? "Umpan Balik untuk Guru 💬" : "Umpan Balik untuk Guru 💬";
+  const sub = sumber === "SISWA"
+    ? "Sampaikan masukan tentang pembelajaran di kelas. Dibaca admin & kepala sekolah sebagai laporan."
+    : "Sampaikan masukan untuk guru anak Anda. Dibaca admin & kepala sekolah sebagai laporan.";
+
   return (
     <AppShell user={user} active="/umpan-balik">
       <nav className="breadcrumb" aria-label="Breadcrumb">
@@ -71,8 +90,8 @@ export default async function UmpanBalikPage({
       </nav>
 
       <div className="page-head">
-        <h1>Umpan Balik untuk Guru 💬</h1>
-        <p>Sampaikan masukan untuk guru anak Anda. Dibaca admin &amp; kepala sekolah sebagai laporan.</p>
+        <h1>{judul}</h1>
+        <p>{sub}</p>
       </div>
 
       {ok && <div className="alert alert-success">✓ Umpan balik terkirim. Terima kasih atas partisipasinya.</div>}
@@ -82,13 +101,16 @@ export default async function UmpanBalikPage({
         <div className="card-head"><h2>Formulir Baru</h2></div>
         <div className="card-body">
           {guru.length === 0 ? (
-            <div className="empty">Belum ada guru terdaftar untuk kelas anak Anda.</div>
+            <div className="empty">
+              {sumber === "SISWA" ? "Belum ada guru terdaftar untuk kelas Anda." : "Belum ada guru terdaftar untuk kelas anak Anda."}
+            </div>
           ) : (
             <FeedbackForm
               guru={guru}
-              anak={links.map((l) => ({ id: String(l.childId), nama: l.child.nama }))}
+              anak={anak}
               templat={templat.map((t) => ({ id: String(t.id), label: t.label }))}
               action={sendFeedback}
+              mode={sumber}
             />
           )}
         </div>
