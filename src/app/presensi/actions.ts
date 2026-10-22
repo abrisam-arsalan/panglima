@@ -43,6 +43,8 @@ export async function openSession(formData: FormData) {
         scheduleId,
         teacherId: user.id,
         date: sessionDate,
+        materi: "",
+        catatanKelas: "",
         status: ClassSessionStatus.DIBUKA,
       },
     });

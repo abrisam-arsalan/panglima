@@ -286,8 +286,11 @@ model ClassSession {
   scheduleId   BigInt             @map("schedule_id")
   teacherId    BigInt             @map("teacher_id")
   date         DateTime           @db.Date
-  materi       String             @default("") @db.Text
-  catatanKelas String             @default("") @map("catatan_kelas") @db.Text
+  // TANPA @default(""): MySQL 8.4 menolak DEFAULT pada TEXT (err 1101),
+  // MariaDB 11.8 membolehkan — skema harus jalan di keduanya. Kode selalu
+  // menulis string eksplisit saat create (openSession) & update (saveAttendance).
+  materi       String             @db.Text
+  catatanKelas String             @map("catatan_kelas") @db.Text
   status       ClassSessionStatus @default(DIBUKA)
   createdAt    DateTime           @default(now()) @map("created_at")
   updatedAt    DateTime           @default(now()) @updatedAt @map("updated_at")
