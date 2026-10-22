@@ -37,7 +37,7 @@ export default async function MpiBankPage({
         <span className="current">Bank Soal</span>
       </div>
       <div className="page-head">
-        <h1>Bank Soal MPI 📚</h1>
+        <h1>Bank Soal MPI</h1>
         <p>Kelola soal guru per game. Soal dikoreksi server — kunci tidak pernah ke browser siswa.</p>
       </div>
 

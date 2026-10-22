@@ -37,7 +37,7 @@ export default async function AdminCetakPage({
       </nav>
 
       <div className="page-head">
-        <h1>Cetak Hasil PTS &amp; Ujian 🖨️</h1>
+        <h1>Cetak Nilai</h1>
         <p>Impor nilai PTS paper (Google Sheet) / tarik nilai CBT → rekap per rombel → cetak A4 / unduh XLSX.</p>
       </div>
 

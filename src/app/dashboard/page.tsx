@@ -124,7 +124,7 @@ export default async function DashboardPage() {
 
       {guruSum && (guruSum.pending > 0 || guruSum.lewat.length > 0 || guruSum.dekat.length > 0 || !guruSum.punyaRombel) && (
         <div className="card">
-          <div className="card-head"><h2>📌 Perlu Perhatian Anda</h2><a className="pill" href="/tugas">ke Tugas →</a></div>
+          <div className="card-head"><h2>Perlu perhatian</h2><a className="pill" href="/tugas">ke Tugas →</a></div>
           <div className="card-body">
             {!guruSum.punyaRombel && (
               <p className="alert alert-error" style={{ marginBottom: 10 }}>

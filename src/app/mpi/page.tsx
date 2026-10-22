@@ -102,7 +102,7 @@ export default async function MpiPage({
       </div>
       <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1>Media Pembelajaran Interaktif (MPI) 🎮</h1>
+          <h1>MPI Edukasi</h1>
           <p>Game edukasi interaktif berbasis web untuk pembelajaran aktif di kelas dan mandiri.</p>
         </div>
         {(user.role === "GURU" || user.role === "ADMIN") && (

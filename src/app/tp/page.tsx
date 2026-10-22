@@ -14,7 +14,7 @@ export default async function TpListPage() {
         <span className="current">Tujuan Pembelajaran</span>
       </div>
       <div className="page-head">
-        <h1>Tujuan Pembelajaran (TP) 🎯</h1>
+        <h1>Tujuan Pembelajaran</h1>
         <p className="muted">Pilih kelas dan mata pelajaran untuk menyusun Tujuan Pembelajaran (TP). Format kode selaras dengan panduan e-Rapor Kemendikbudristek (contoh: TP.1 atau TP.9220).</p>
       </div>
       {assigns.length === 0 && (

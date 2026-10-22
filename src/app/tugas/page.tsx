@@ -188,7 +188,7 @@ export default async function TugasPage({
             <span className="current">Tugas</span>
           </div>
           <div className="page-head">
-            <h1>Kelola Tugas &amp; Penilaian 📝</h1>
+            <h1>Kelola Tugas & Penilaian</h1>
             <p>Pilih kelas dan mata pelajaran untuk membuat tugas baru atau memeriksa hasil pengumpulan siswa.</p>
           </div>
           {assigns.length === 0 && <div className="empty">Belum ada kelas mengajar yang terdaftar untuk Anda pada semester ini.</div>}
@@ -525,7 +525,7 @@ export default async function TugasPage({
         <span className="current">Tugas</span>
       </div>
       <div className="page-head">
-        <h1>Daftar Tugas Pembelajaran 📝</h1>
+        <h1>Daftar Tugas</h1>
         <p>{user.role === "SISWA" ? "Daftar tugas kelas yang harus dikerjakan semester ini." : "Daftar tugas anak Anda semester ini (mode pantau)."}</p>
       </div>
       {user.role === "ORTU" && anakList.length > 1 && (

@@ -21,7 +21,7 @@ export default async function NotifikasiPage() {
       </div>
       <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1>Pemberitahuan &amp; Notifikasi 🔔</h1>
+          <h1>Notifikasi</h1>
           <p className="muted">{unread ? `${unread} notifikasi belum dibaca.` : "Semua notifikasi telah dibaca."}</p>
         </div>
         {unread > 0 && (

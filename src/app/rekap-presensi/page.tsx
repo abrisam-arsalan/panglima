@@ -47,7 +47,7 @@ export default async function RekapPresensiPage({
           <span className="current">Kehadiran Saya</span>
         </div>
         <div className="page-head">
-          <h1>Riwayat Kehadiran Siswa 📅</h1>
+          <h1>Kehadiran Saya</h1>
           <p>Rekapitulasi kehadiran dan catatan jurnal materi belajar di kelas.</p>
         </div>
 
@@ -141,7 +141,7 @@ export default async function RekapPresensiPage({
           <span className="current">Kehadiran Anak</span>
         </div>
         <div className="page-head">
-          <h1>Kehadiran Siswa: {currentChild?.nama ?? "—"} 📅</h1>
+          <h1>Kehadiran {currentChild?.nama ?? "Anak"}</h1>
           <p>Pantau kehadiran harian dan jurnal materi pembelajaran anak Anda.</p>
         </div>
 
@@ -246,7 +246,7 @@ export default async function RekapPresensiPage({
         <span className="current">Rekapitulasi Presensi</span>
       </div>
       <div className="page-head">
-        <h1>Rekapitulasi Kehadiran &amp; Jurnal Mengajar 📊</h1>
+        <h1>Rekap Kehadiran</h1>
         <p className="muted">Monitoring kehadiran harian dan keterlaksanaan jurnal sesi mengajar kelas.</p>
       </div>
 

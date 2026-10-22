@@ -324,7 +324,7 @@ export default async function JadwalPage({
           <span className="current">Jadwal Pelajaran</span>
         </div>
         <div className="page-head">
-          <h1>Jadwal Pelajaran: {currentChild?.nama ?? "Anak"} 🗓️</h1>
+          <h1>Jadwal Pelajaran: {currentChild?.nama ?? "Anak"}</h1>
           <p>
             {clsId
               ? `Jadwal tatap muka mingguan kelas ${currentChild.classRef?.name ?? ""} di SMPN 5 Tegal.`
@@ -365,7 +365,7 @@ export default async function JadwalPage({
           <span className="current">Jadwal Pelajaran</span>
         </div>
         <div className="page-head">
-          <h1>Jadwal Pelajaran Mingguan 🗓️</h1>
+          <h1>Jadwal Mingguan</h1>
           <p>{clsId ? "Jadwal tatap muka mingguan kelasmu di SMPN 5 Tegal." : "Kelas belum ditautkan — hubungi admin."}</p>
         </div>
         <WeekView rows={rows} today={today} />
@@ -385,7 +385,7 @@ export default async function JadwalPage({
           <span className="current">Jadwal Mengajar</span>
         </div>
         <div className="page-head">
-          <h1>Jadwal Mengajar Mingguan 🗓️</h1>
+          <h1>Jadwal Mengajar</h1>
           <p>Jadwal tatap muka mingguan untuk {my.length} kelas yang Anda ajar pada semester ini.</p>
         </div>
         <WeekView rows={rows} today={today} />
@@ -484,7 +484,7 @@ export default async function JadwalPage({
 
       <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1>Jadwal Kegiatan Pembelajaran 🗓️</h1>
+          <h1>Jadwal Belajar</h1>
           <p>
             Semester I (Satu) Tahun Pelajaran 2026-2027 · SMP Negeri 5 Tegal. Memantau jam tatap muka seluruh guru dan rombel.
           </p>

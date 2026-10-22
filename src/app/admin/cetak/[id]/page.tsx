@@ -82,7 +82,7 @@ export default async function CetakRombelPage({ params }: { params: Promise<{ id
 
       <div className="page-head no-print" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1>Rekap Nilai {rombel.name} 🖨️</h1>
+          <h1>Rekap Nilai {rombel.name}</h1>
           <p className="muted">{siswa.length} siswa · {asesmens.length} asesmen · {raporSubjects.size} mapel rapor</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

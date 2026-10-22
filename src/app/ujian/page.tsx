@@ -42,7 +42,7 @@ export default async function UjianPortalPage() {
 
       <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1>Platform Ujian &amp; Asesmen (CBT) 📋</h1>
+          <h1>Ujian CBT</h1>
           <p>Pelaksanaan asesmen formatif, sumatif, dan penyusunan bank soal Computer Based Test.</p>
         </div>
         {isAdmin && (

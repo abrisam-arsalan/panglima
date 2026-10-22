@@ -60,7 +60,7 @@ export default async function AdminLaporanPage({
       </nav>
 
       <div className="page-head">
-        <h1>Laporan Umpan Balik 💬</h1>
+        <h1>Laporan Umpan Balik</h1>
         <p>Masukan ortu &amp; siswa untuk guru — bahan laporan ke kepala sekolah. Tidak terlihat oleh guru.</p>
       </div>
 

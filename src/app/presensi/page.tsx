@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/app-shell";
+import PageHead from "@/components/page-head";
+import { GlyphPresensi } from "@/components/glyph";
 import { DAYS } from "@/lib/notify";
 import { openSession, saveAttendance } from "./actions";
 import MarkAll from "./mark-all";
@@ -201,10 +203,11 @@ export default async function PresensiPage({
 
   return (
     <AppShell user={user} active="/presensi">
-      <div className="page-head">
-        <h1>Presensi & Jurnal Mengajar ✅</h1>
-        <p>Buka absensi harian dan catat jurnal materi kelas sesuai jadwal mengajar Anda.</p>
-      </div>
+      <PageHead
+        title="Presensi & Jurnal Mengajar"
+        sub="Buka absensi harian dan catat jurnal materi kelas sesuai jadwal mengajar Anda."
+        glyph={<GlyphPresensi />}
+      />
 
       <div className="card">
         <div className="card-head">

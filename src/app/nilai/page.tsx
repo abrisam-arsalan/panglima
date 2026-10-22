@@ -44,7 +44,7 @@ export default async function NilaiPage({
             <span className="current">Nilai &amp; TP</span>
           </div>
           <div className="page-head">
-            <h1>Ketercapaian TP &amp; Nilai Rapor 📊</h1>
+            <h1>Nilai & Ketercapaian TP</h1>
             <p>Pilih mata pelajaran untuk melihat ketercapaian Tujuan Pembelajaran.</p>
           </div>
           {user.role === "ORTU" && anakList.length > 1 && (
@@ -156,7 +156,7 @@ export default async function NilaiPage({
           <span className="current">Gradebook</span>
         </div>
         <div className="page-head">
-          <h1>Matriks Nilai &amp; Gradebook 📊</h1>
+          <h1>Matriks Nilai</h1>
           <p>Pilih kelas dan mata pelajaran untuk melihat ketercapaian Tujuan Pembelajaran (TP) serta rekap nilai persiapan e-Rapor.</p>
         </div>
         {!assigns.length && <div className="empty">Belum ada kelas mengajar yang terdaftar untuk Anda pada semester ini.</div>}

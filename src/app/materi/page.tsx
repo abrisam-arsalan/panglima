@@ -57,7 +57,7 @@ export default async function MateriPage({
           <span className="current">Materi Belajar</span>
         </div>
         <div className="page-head">
-          <h1>Materi Pembelajaran 📖</h1>
+          <h1>Materi Belajar</h1>
           <p>{materials.length} materi terbit untuk kelasmu.</p>
         </div>
         {materials.length === 0 && <div className="empty">Belum ada materi pembelajaran yang terbit.</div>}
@@ -113,7 +113,7 @@ export default async function MateriPage({
           <span className="current">Materi</span>
         </div>
         <div className="page-head">
-          <h1>Kelola Materi Pembelajaran 📖</h1>
+          <h1>Kelola Materi</h1>
           <p>Pilih kelas dan mata pelajaran untuk membuat atau membagikan materi pembelajaran{user.role === "KEPSEK" ? " (mode pantau)" : ""}.</p>
         </div>
         {assigns.length === 0 && <div className="empty">Belum ada kelas mengajar yang terdaftar untuk Anda pada semester ini.</div>}
