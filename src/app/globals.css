@@ -345,6 +345,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px; /* jeda antara checkbox/radio dengan teks */
   background: var(--card);
   font-weight: 700;
   border: 2px solid var(--ink);
