@@ -32,6 +32,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/pengumuman", icon: "📢", label: "Pengumuman" },
     { href: "/admin/ujian", icon: "📋", label: "Ujian" },
     { href: "/admin/cetak", icon: "🖨️", label: "Cetak Nilai" },
+    { href: "/admin/laporan", icon: "💬", label: "Laporan Feedback" },
     { href: "/admin/setup", icon: "🛠️", label: "Setup Awal" },
   ],
   KEPSEK: [
@@ -40,6 +41,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/nilai", icon: "📊", label: "Rekap Nilai" },
     { href: "/jadwal", icon: "🗓️", label: "Jadwal" },
     { href: "/mpi", icon: "🎮", label: "MPI" },
+    { href: "/admin/laporan", icon: "💬", label: "Laporan" },
   ],
   GURU: [
     { href: "/dashboard", icon: "🏠", label: "Beranda" },
@@ -65,6 +67,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/rekap-presensi", icon: "📅", label: "Kehadiran" },
     { href: "/materi", icon: "📖", label: "Materi" },
     { href: "/nilai", icon: "📊", label: "Nilai" },
+    { href: "/umpan-balik", icon: "💬", label: "Umpan Balik" },
     { href: "/ujian", icon: "📋", label: "Ujian" },
   ],
 };

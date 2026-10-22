@@ -148,6 +148,9 @@ model User {
   handoffCodes      HandoffCode[]
   mpiGames          MpiGame[]        @relation("MpiGameOwner")
   mpiQuestions      MpiQuestion[]    @relation("MpiQuestionOwner")
+  feedbacksGiven    ParentFeedback[] @relation("FeedbackParent")
+  feedbacksAboutMe  ParentFeedback[] @relation("FeedbackTeacher")
+  feedbacksAboutKid ParentFeedback[] @relation("FeedbackChild")
 
   @@index([role, isActive])
   @@index([classId, role])
@@ -607,6 +610,55 @@ model Notification {
 
   @@index([userId, readAt])
   @@map("notifications")
+}
+
+// ── UMPAN BALIK ORTU → GURU (laporan ke kepsek via admin) ─────────────────
+// Ortu pilih guru + klik templat (boleh >1) + catatan bebas → kirim.
+// HANYA admin & kepsek yang membaca (laporan). Guru TIDAK melihat langsung —
+// melindungi ortu dari sungkan/konflik; tindak lanjut via kepsek/admin.
+model FeedbackTemplate {
+  id        BigInt   @id @default(autoincrement())
+  label     String   @db.VarChar(120) // "Anak saya belum paham materi"
+  isActive  Boolean  @default(true) @map("is_active")
+  urutan    Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  items FeedbackItem[]
+
+  @@map("feedback_templates")
+}
+
+model ParentFeedback {
+  id        BigInt   @id @default(autoincrement())
+  parentId  BigInt   @map("parent_id")
+  teacherId BigInt   @map("teacher_id")
+  childId   BigInt?  @map("child_id") // anak terkait (bila ortu punya >1 tautan)
+  note      String?  @db.Text // catatan bebas tambahan
+  // status ditangani admin/kepsek: BARU → DIBACA → DITINDAKLANJUTI
+  status    String   @default("BARU") @db.VarChar(16)
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parent  User           @relation("FeedbackParent", fields: [parentId], references: [id], onDelete: Cascade)
+  teacher User           @relation("FeedbackTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  child   User?          @relation("FeedbackChild", fields: [childId], references: [id], onDelete: SetNull)
+  items   FeedbackItem[]
+
+  @@index([status, createdAt])
+  @@index([teacherId, status])
+  @@map("parent_feedbacks")
+}
+
+model FeedbackItem {
+  id         BigInt @id @default(autoincrement())
+  feedbackId BigInt @map("feedback_id")
+  templateId BigInt @map("template_id")
+
+  feedback ParentFeedback   @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  template FeedbackTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  @@unique([feedbackId, templateId])
+  @@map("feedback_items")
 }
 
 // ── SISTEM ──────────────────────────────────────────────────────────────────
