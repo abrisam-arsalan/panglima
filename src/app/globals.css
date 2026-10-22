@@ -297,21 +297,97 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Bottomnav responsive: untuk role dengan banyak tab (mis. Guru 9 menu), dibuat scrollable horizontal tanpa scrollbar jelek */
-.bottomnav {
-  display: flex;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+/* Bottombar 5 slot: 4 favorit + tombol tengah menonjol (aksi harian) + Lainnya.
+   Sisa menu pindah ke bottom-sheet — tanpa scroll horizontal lagi. */
+.bottomnav-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  overflow: visible;
 }
-.bottomnav::-webkit-scrollbar {
-  display: none;
-}
-.bn-item {
-  flex: 0 0 auto;
-  min-width: 68px;
+.bottomnav-5 .bn-item {
+  flex: none;
+  min-width: 0;
   min-height: 54px;
-  padding: 4px 6px;
+  padding: 4px 2px;
+  font-size: 11px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+/* Tombol tengah: lingkaran kuning menonjol (zona jempol) */
+.bn-mid .bn-mid-btn {
+  width: 52px;
+  height: 52px;
+  margin-top: -22px;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 2px 3px 0 var(--ink);
+  display: grid;
+  place-items: center;
+}
+.bn-mid .bn-mid-btn .ico {
+  font-size: 24px;
+}
+.bn-mid.active .bn-mid-btn {
+  background: var(--teal);
+}
+/* Bottom-sheet "Lainnya" */
+.bn-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+}
+.bn-sheet {
+  width: 100%;
+  background: var(--paper);
+  border-top: 3px solid var(--ink);
+  border-radius: 16px 16px 0 0;
+  padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  animation: bn-sheet-up 0.18s ease-out;
+}
+@keyframes bn-sheet-up {
+  from { transform: translateY(40px); opacity: 0.6; }
+  to { transform: none; opacity: 1; }
+}
+.bn-sheet-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--ink);
+  opacity: 0.3;
+  margin: 4px auto 12px;
+}
+.bn-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.bn-sheet-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 4px;
+  min-height: 64px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.bn-sheet-item .ico {
+  font-size: 22px;
+}
+.bn-sheet-item.active {
+  background: var(--yellow);
 }
 
 /* Touch targets: tombol dan input minimal 44px agar mudah dijangkau jari */

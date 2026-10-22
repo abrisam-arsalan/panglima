@@ -2,6 +2,7 @@ import type { User } from "@prisma/client";
 import { NAV, initials } from "@/lib/nav";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "./logout-button";
+import BottomNav from "./bottomnav";
 
 const ROLE_LABEL: Record<string, string> = {
   ADMIN: "Admin / TU",
@@ -119,16 +120,7 @@ export default async function AppShell({
         </main>
       </div>
 
-      {!isAdmin ? (
-        <nav className="bottomnav">
-          {nav.map((n) => (
-            <a key={n.href} className={`bn-item ${active === n.href ? "active" : ""}`} href={n.href}>
-              <span className="ico">{n.icon}</span>
-              <span>{n.label}</span>
-            </a>
-          ))}
-        </nav>
-      ) : null}
+      {!isAdmin ? <BottomNav nav={nav} active={active} /> : null}
     </>
   );
 }
