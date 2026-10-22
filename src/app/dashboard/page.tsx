@@ -117,7 +117,7 @@ export default async function DashboardPage() {
           <p>
             {assignments > 0
               ? `Anda mengampu ${assignments} kelas mata pelajaran pada semester ini.`
-              : "Belum ada jadwal kelas mengajar yang terdaftar — silakan hubungi bagian kurikulum / admin."}
+              : "Belum ada kelas mengajar — hubungi admin."}
           </p>
         )}
       </div>
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
           <div className="card-body">
             {!guruSum.punyaRombel && (
               <p className="alert alert-error" style={{ marginBottom: 10 }}>
-                Anda belum memiliki jadwal kelas mengajar pada semester ini — silakan hubungi admin untuk pembagian tugas mengajar di menu <b>Penugasan</b>.
+                Belum ada kelas mengajar — hubungi admin.
               </p>
             )}
             {guruSum.pending > 0 && (

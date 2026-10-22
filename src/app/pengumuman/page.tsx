@@ -66,7 +66,7 @@ export default async function PengumumanPage({
       </div>
       <div className="page-head">
         <h1>Pengumuman Sekolah</h1>
-        <p className="muted">{user.role === "SISWA" || user.role === "ORTU" ? "Informasi resmi sekolah dan agenda belajar rombel kelasmu." : "Pusat informasi dan edaran resmi civitas akademika SMPN 5 Tegal."}</p>
+        <p className="muted">{user.role === "SISWA" || user.role === "ORTU" ? "Info resmi sekolah." : "Terbitkan info untuk warga sekolah."}</p>
       </div>
 
       {canPost && (

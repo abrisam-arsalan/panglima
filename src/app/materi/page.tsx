@@ -114,7 +114,7 @@ export default async function MateriPage({
         </div>
         <div className="page-head">
           <h1>Kelola Materi</h1>
-          <p>Pilih kelas dan mata pelajaran untuk membuat atau membagikan materi pembelajaran{user.role === "KEPSEK" ? " (mode pantau)" : ""}.</p>
+          <p>Pilih mapel, bagikan bahan belajar.</p>
         </div>
         {assigns.length === 0 && <div className="empty">Belum ada kelas mengajar yang terdaftar untuk Anda pada semester ini.</div>}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

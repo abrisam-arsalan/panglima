@@ -70,7 +70,7 @@ export default async function AkunSiswaPage({
       <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
           <h1>Data Siswa Ã°Å¸Å½â€œ</h1>
-          <p>Kelola data siswa, PIN login ujian, dan rombel. Seluruh akun siswa otomatis disinkronkan ke platform Ujian (CBT).</p>
+          <p>Kelola siswa dan PIN ujian.</p>
         </div>
         <form action={syncStudentsAction}>
           <button className="btn btn-sm btn-yellow" type="submit">

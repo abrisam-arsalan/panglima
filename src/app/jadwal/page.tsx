@@ -366,7 +366,7 @@ export default async function JadwalPage({
         </div>
         <div className="page-head">
           <h1>Jadwal Mingguan</h1>
-          <p>{clsId ? "Jadwal tatap muka mingguan kelasmu di SMPN 5 Tegal." : "Kelas belum ditautkan — hubungi admin."}</p>
+          <p>{clsId ? "Jadwal mingguan kelasmu." : "Kelas belum ditautkan — hubungi admin."}</p>
         </div>
         <WeekView rows={rows} today={today} />
       </AppShell>

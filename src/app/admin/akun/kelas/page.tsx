@@ -41,7 +41,7 @@ export default async function AkunKelasPage({
 
       <div className="page-head">
         <h1>Manajemen Kelas &amp; Rombel ðŸ«</h1>
-        <p>Kelola jenjang dan rombongan belajar sekolah. Data kelas otomatis disinkronkan ke aplikasi Ujian (CBT).</p>
+        <p>Kelola rombel sekolah.</p>
       </div>
 
       <AccountNav activeTab="kelas" />

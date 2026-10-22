@@ -15,7 +15,7 @@ export default async function TpListPage() {
       </div>
       <div className="page-head">
         <h1>Tujuan Pembelajaran</h1>
-        <p className="muted">Pilih kelas dan mata pelajaran untuk menyusun Tujuan Pembelajaran (TP). Format kode selaras dengan panduan e-Rapor Kemendikbudristek (contoh: TP.1 atau TP.9220).</p>
+        <p className="muted">Susun TP per mapel. Kode mis. TP.1.</p>
       </div>
       {assigns.length === 0 && (
         <div className="empty">Belum ada kelas mengajar yang terdaftar untuk Anda pada semester ini.</div>

@@ -91,7 +91,7 @@ export default async function MpiBankPage({
                   ))}
                 </select>
               </div>
-              <input name="explanation" className="input" placeholder="Penjelasan jawaban (opsional, tampil setelah koreksi)" style={{ minHeight: 44 }} />
+              <input name="explanation" className="input" placeholder="Penjelasan jawaban (opsional)…" style={{ minHeight: 44 }} />
               {user.role === "ADMIN" && (
                 <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14 }}>
                   <input type="checkbox" name="isDemo" value="1" /> Jadikan soal demo (bisa dipakai semua)

@@ -189,7 +189,7 @@ export default async function TugasPage({
           </div>
           <div className="page-head">
             <h1>Kelola Tugas & Penilaian</h1>
-            <p>Pilih kelas dan mata pelajaran untuk membuat tugas baru atau memeriksa hasil pengumpulan siswa.</p>
+            <p>Buat tugas dan periksa pengumpulan.</p>
           </div>
           {assigns.length === 0 && <div className="empty">Belum ada kelas mengajar yang terdaftar untuk Anda pada semester ini.</div>}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -260,7 +260,7 @@ export default async function TugasPage({
               </div>
               <div className="field">
                 <label className="field-label">Instruksi &amp; Petunjuk Pengerjaan</label>
-                <textarea className="input" name="instruksi" rows={3} placeholder="Jelaskan apa yang harus dikerjakan, format jawaban, dan kriteria penilaian…" />
+                <textarea className="input" name="instruksi" rows={3} placeholder="Apa yang dikerjakan + format jawaban…" />
               </div>
               <div className="form-grid two">
                 <div className="field">
@@ -447,7 +447,7 @@ export default async function TugasPage({
                 {(task.tipe === "TEKS" || task.tipe === "CENTANG") && (
                   <div className="field">
                     <label className="field-label">{task.tipe === "TEKS" ? "Ketik Jawaban Tugas" : "Catatan / Keterangan (Opsional)"}</label>
-                    <textarea className="input" name="text" rows={5} defaultValue={sub?.text ?? ""} required={task.tipe === "TEKS"} placeholder="Tuliskan jawaban atau keterangan pengerjaan tugasmu di sini…" />
+                    <textarea className="input" name="text" rows={5} defaultValue={sub?.text ?? ""} required={task.tipe === "TEKS"} placeholder="Tulis jawabanmu di sini…" />
                   </div>
                 )}
                 {task.tipe === "FILE" && (
@@ -476,7 +476,7 @@ export default async function TugasPage({
               </span>
             </div>
             <div className="card-body">
-              <p className="muted">Waktu Kirim: {fmt(sub?.submittedAt ?? null)}{sub && sub.revisiCount > 0 && ` · Telah direvisi ${sub.revisiCount} kali`}</p>
+              <p className="muted">Dikirim: {fmt(sub?.submittedAt ?? null)}{sub && sub.revisiCount > 0 && ` · revisi ${sub.revisiCount}x`}</p>
               {sub?.text && <p className="prose" style={{ marginTop: 8 }}>{sub.text}</p>}
               {sub?.files && sub.files.length > 0 && (
                 <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -526,7 +526,7 @@ export default async function TugasPage({
       </div>
       <div className="page-head">
         <h1>Daftar Tugas</h1>
-        <p>{user.role === "SISWA" ? "Daftar tugas kelas yang harus dikerjakan semester ini." : "Daftar tugas anak Anda semester ini (mode pantau)."}</p>
+        <p>{user.role === "SISWA" ? "Kerjakan dan kumpulkan sebelum tenggat." : "Pantau tugas anak Anda."}</p>
       </div>
       {user.role === "ORTU" && anakList.length > 1 && (
         <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>

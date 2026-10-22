@@ -157,7 +157,7 @@ export default async function NilaiPage({
         </div>
         <div className="page-head">
           <h1>Matriks Nilai</h1>
-          <p>Pilih kelas dan mata pelajaran untuk melihat ketercapaian Tujuan Pembelajaran (TP) serta rekap nilai persiapan e-Rapor.</p>
+          <p>Pilih mapel, lihat nilai dan TP.</p>
         </div>
         {!assigns.length && <div className="empty">Belum ada kelas mengajar yang terdaftar untuk Anda pada semester ini.</div>}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

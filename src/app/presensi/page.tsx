@@ -63,7 +63,7 @@ export default async function PresensiPage({
               {session.status}
             </span>
           </p>
-          {ok && <p className="badge badge-green" style={{ marginTop: 8 }}>✅ Presensi berhasil disimpan!</p>}
+          {ok && <p className="badge badge-green" style={{ marginTop: 8 }}>Tersimpan.</p>}
         </div>
 
         <form action={saveAttendance} id="form-presensi">
@@ -127,7 +127,7 @@ export default async function PresensiPage({
                       type="text"
                       name={`ket_${r.studentId}`}
                       defaultValue={r.keterangan}
-                      placeholder="Keterangan / alasan izin / sakit (opsional)..."
+                      placeholder="Alasan izin/sakit (opsional)…"
                     />
                   </div>
                 </div>
@@ -146,7 +146,7 @@ export default async function PresensiPage({
                   name="materi"
                   rows={4}
                   defaultValue={session.materi}
-                  placeholder="Ringkasan materi atau bab yang diajarkan pada pertemuan ini..."
+                  placeholder="Materi/bab pertemuan ini…"
                 />
               </div>
             </div>
@@ -161,7 +161,7 @@ export default async function PresensiPage({
                   name="catatanKelas"
                   rows={4}
                   defaultValue={session.catatanKelas}
-                  placeholder="Catatan perilaku, PR, atau hal khusus dalam kelas..."
+                  placeholder="Catatan kelas, PR, hal khusus…"
                 />
               </div>
             </div>
