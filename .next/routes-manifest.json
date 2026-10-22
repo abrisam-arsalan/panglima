@@ -20,6 +20,14 @@
   },
   "dynamicRoutes": [
     {
+      "page": "/admin/cetak/[id]",
+      "regex": "^/admin/cetak/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/admin/cetak/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/api/file/[id]",
       "regex": "^/api/file/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -80,6 +88,12 @@
       "regex": "^/admin/akun/siswa(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/admin/akun/siswa(?:/)?$"
+    },
+    {
+      "page": "/admin/cetak",
+      "regex": "^/admin/cetak(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/cetak(?:/)?$"
     },
     {
       "page": "/admin/import",
