@@ -76,6 +76,7 @@ export default function MpiMain({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          game: slug,
           jawaban: soal.map((s) => ({ soalId: s.id, jawab: jawab[String(s.id)] ?? "" })),
         }),
       });
@@ -88,7 +89,7 @@ export default function MpiMain({
     } finally {
       setLoading(false);
     }
-  }, [soal, jawab]);
+  }, [soal, jawab, slug]);
 
   const benarMap = new Map((hasil?.hasil ?? []).map((h) => [h.soalId, h]));
 

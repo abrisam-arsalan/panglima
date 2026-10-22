@@ -98,6 +98,16 @@ export async function requireRole(roles: Role[]): Promise<User> {
 }
 
 /**
+ * Untuk SERVER ACTIONS (dipanggil via getSessionUser langsung): tegakkan
+ * mustChangePin seperti requireUser. Mencegah akun PIN-sementara dipakai
+ * beraksi sebelum ganti PIN (temuan audit: semua actions bypass).
+ */
+export function assertPinClear(user: User | null): asserts user is User {
+  if (!user) redirect("/login");
+  if (user.mustChangePin) redirect("/change-pin");
+}
+
+/**
  * Gerbang permukaan ADMIN — satu pintu untuk SELURUH route /admin/*.
  * Beda dari requireRole(["ADMIN"]): non-admin DITOLAK TEGAS (403, bukan
  * redirect diam-diam ke dashboard) + tercatat di audit. Dipakai di setiap

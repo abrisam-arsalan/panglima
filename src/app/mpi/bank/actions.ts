@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser, logAudit } from "@/lib/auth";
+import { toBigInt } from "@/lib/safe";
+import { getSessionUser, logAudit, assertPinClear } from "@/lib/auth";
 
 async function staff() {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || (user.role !== "GURU" && user.role !== "ADMIN")) redirect("/login");
   return user;
 }
@@ -17,7 +19,7 @@ const KUNCI = ["A", "B", "C", "D"];
 export async function addSoal(formData: FormData) {
   const user = await staff();
 
-  const gameId = BigInt(String(formData.get("gameId") ?? "0"));
+  const gameId = toBigInt(formData.get("gameId")) ?? BigInt(0);
   const pertanyaan = String(formData.get("pertanyaan") ?? "").trim();
   const opsiA = String(formData.get("opsiA") ?? "").trim() || null;
   const opsiB = String(formData.get("opsiB") ?? "").trim() || null;
@@ -61,10 +63,10 @@ export async function addSoal(formData: FormData) {
   revalidatePath("/mpi/bank");
 }
 
-/** Hapus butir soal — pemilik atau admin. */
+/** Hapus butir soal â€” pemilik atau admin. */
 export async function deleteSoal(formData: FormData) {
   const user = await staff();
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const q = await prisma.mpiQuestion.findUnique({ where: { id } });
   if (!q) throw new Error("Soal tidak ditemukan");
   if (user.role !== "ADMIN" && q.ownerId !== user.id) throw new Error("Hanya pemilik / admin");

@@ -5,22 +5,26 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { requireUser, logAudit } from "@/lib/auth";
+import { requireAdminSurface, logAudit } from "@/lib/auth";
 import { currentSemester } from "@/lib/academic";
 import { planSiswa, planGuru, planOrtu, planKelas, planJadwal, type ImportKind } from "@/lib/importer";
 import { syncStudentsToCbt } from "@/lib/cbt-sync";
+import { toBigInt, safePath } from "@/lib/safe";
 
 /**
- * Generate 6 digit random PIN numerik otomatis (misal: "492817")
+ * Generate 6 digit random PIN numerik, hindari kombinasi mudah ditebak.
  */
 function generateRandomPin(): string {
+  const banned = new Set(["123456", "654321", "000000", "111111", "012345", "123123"]);
+  for (let i = 0; i < 20; i++) {
+    const pin = crypto.randomInt(100000, 1000000).toString();
+    if (!banned.has(pin)) return pin;
+  }
   return crypto.randomInt(100000, 1000000).toString();
 }
 
-async function guard() {
-  const u = await requireUser();
-  if (u.role !== "ADMIN") throw new Error("Hanya admin yang berwenang");
-  return u;
+async function guard(area = "admin/akun") {
+  return requireAdminSurface(area);
 }
 
 /**
@@ -36,8 +40,8 @@ export async function importBulkAction(formData: FormData) {
     : rawKind === "jadwal" ? "jadwal"
     : "siswa";
 
-  const redirectUrl = String(formData.get("redirectUrl") ?? `/admin/akun/${kind}`);
-  const tmpPass = String(formData.get("tmpPass") ?? "").trim() || "123456";
+  const redirectUrl = safePath(formData.get("redirectUrl"), `/admin/akun/${kind}`);
+  const tmpPass = String(formData.get("tmpPass") ?? "").trim() || generateRandomPin();
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
@@ -56,7 +60,7 @@ export async function importBulkAction(formData: FormData) {
     : planSiswa(text);
 
   if (problems.length) {
-    redirect(`${redirectUrl}?err=${encodeURIComponent(problems.join(" · "))}`);
+    redirect(`${redirectUrl}?err=${encodeURIComponent(problems.join(" Â· "))}`);
   }
   if (!rows.length) {
     redirect(`${redirectUrl}?err=${encodeURIComponent("Tidak ada baris data yang ditemukan dalam berkas")}`);
@@ -82,7 +86,7 @@ export async function importBulkAction(formData: FormData) {
   });
   for (const k of kelasAktif) classCache.set(k.name.toUpperCase(), k.id);
 
-  // ── 1. BULK KELAS ──
+  // â”€â”€ 1. BULK KELAS â”€â”€
   if (kind === "kelas") {
     for (const r of rows) {
       if (r.status === "ERR") {
@@ -122,7 +126,7 @@ export async function importBulkAction(formData: FormData) {
     }
   }
 
-  // ── 2. BULK JADWAL ──
+  // â”€â”€ 2. BULK JADWAL â”€â”€
   else if (kind === "jadwal") {
     const subjectCache = new Map<string, bigint>();
     const allSubjects = await prisma.subject.findMany({ select: { id: true, name: true, code: true } });
@@ -234,7 +238,7 @@ export async function importBulkAction(formData: FormData) {
     }
   }
 
-  // ── 3. BULK SISWA / GURU / ORTU ──
+  // â”€â”€ 3. BULK SISWA / GURU / ORTU â”€â”€
   else {
     for (const r of rows) {
       if (r.status === "ERR") {
@@ -390,7 +394,7 @@ export async function addStudentAction(formData: FormData) {
   const nama = String(formData.get("nama") ?? "").trim();
   const nisn = String(formData.get("nisn") ?? "").trim().replace(/\D/g, "");
   const classIdRaw = String(formData.get("classId") ?? "");
-  const pin = String(formData.get("pin") ?? "").trim() || "123456";
+  const pin = String(formData.get("pin") ?? "").trim() || generateRandomPin();
 
   if (!nama || !nisn) {
     redirect(`/admin/akun/siswa?err=${encodeURIComponent("Nama dan NISN wajib diisi")}`);
@@ -436,7 +440,7 @@ export async function addTeacherAction(formData: FormData) {
   const nama = String(formData.get("nama") ?? "").trim();
   const nip = String(formData.get("nip") ?? "").trim();
   const username = String(formData.get("username") ?? "").trim() || nip;
-  const password = String(formData.get("password") ?? "").trim() || "123456";
+  const password = String(formData.get("password") ?? "").trim() || generateRandomPin();
 
   if (!nama || !username) {
     redirect(`/admin/akun/guru?err=${encodeURIComponent("Nama dan Username/NIP wajib diisi")}`);
@@ -476,7 +480,7 @@ export async function addParentAction(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim() || (anakNisn ? `P${anakNisn}` : "");
   const hubunganRaw = String(formData.get("hubungan") ?? "WALI");
   const hubungan = hubunganRaw === "AYAH" || hubunganRaw === "IBU" || hubunganRaw === "WALI" ? hubunganRaw : "WALI";
-  const password = String(formData.get("password") ?? "").trim() || "123456";
+  const password = String(formData.get("password") ?? "").trim() || generateRandomPin();
 
   if (!nama || !username || !anakNisn) {
     redirect(`/admin/akun/ortu?err=${encodeURIComponent("Nama, Username, dan NISN Anak wajib diisi")}`);
@@ -560,7 +564,7 @@ export async function addClassAction(formData: FormData) {
  */
 export async function deleteClassAction(formData: FormData) {
   const admin = await guard();
-  const classId = BigInt(String(formData.get("classId") ?? "0"));
+  const classId = toBigInt(formData.get("classId"));
   if (!classId) return;
 
   const countStudents = await prisma.user.count({ where: { classId, role: "SISWA" } });
@@ -579,10 +583,15 @@ export async function deleteClassAction(formData: FormData) {
  */
 export async function resetPasswordAction(formData: FormData) {
   const admin = await guard();
-  const userId = BigInt(String(formData.get("userId") ?? "0"));
+  const userId = toBigInt(formData.get("userId"));
+  if (!userId) throw new Error("ID pengguna tidak valid");
   const rawPin = String(formData.get("newPin") ?? "").trim();
+  // PIN: 6 digit angka BUKAN urutan/kembar umum; kosong = acak.
   const newPin = rawPin || generateRandomPin();
-  const redirectUrl = String(formData.get("redirectUrl") ?? "/admin/akun/siswa");
+  if (!/^\d{6}$/.test(newPin) || /^(123456|654321|000000|111111|012345|123123)$/.test(newPin)) {
+    throw new Error("PIN harus 6 digit dan bukan kombinasi mudah ditebak");
+  }
+  const back = safePath(formData.get("redirectUrl"), "/admin/akun/siswa");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return;
@@ -601,9 +610,13 @@ export async function resetPasswordAction(formData: FormData) {
     }
   }
 
+  // PIN BARU TIDAK dimasukkan ke URL (bocor di riwayat/log) â€” tampil sekali
+  // via halaman khusus sekali-lihat di bawah (pinShow), kedaluwarsa 5 menit.
+  const { issuePinShow } = await import("@/lib/pin-show");
+  const token = await issuePinShow(admin.id, userId, newPin);
   await logAudit({ userId: admin.id, action: "RESET_PIN", entity: "users", entityId: String(userId) });
-  revalidatePath(redirectUrl);
-  redirect(`${redirectUrl}?msg=${encodeURIComponent(`PIN / Password ${user.nama} berhasil direset: ${newPin}`)}`);
+  revalidatePath(back);
+  redirect(`${back}?pinShow=${token}`);
 }
 
 /**
@@ -611,8 +624,8 @@ export async function resetPasswordAction(formData: FormData) {
  */
 export async function toggleActiveAction(formData: FormData) {
   const admin = await guard();
-  const userId = BigInt(String(formData.get("userId") ?? "0"));
-  const redirectUrl = String(formData.get("redirectUrl") ?? "/admin/akun/siswa");
+  const userId = toBigInt(formData.get("userId")); if (!userId) throw new Error("ID pengguna tidak valid");
+  const redirectUrl = safePath(formData.get("redirectUrl"), "/admin/akun/siswa");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return;

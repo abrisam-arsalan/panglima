@@ -3,20 +3,22 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser, logAudit } from "@/lib/auth";
+import { toBigInt } from "@/lib/safe";
+import { getSessionUser, logAudit, assertPinClear } from "@/lib/auth";
 import { AttendanceStatus, ClassSessionStatus } from "@prisma/client";
 
 export async function openSession(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || (user.role !== "GURU" && user.role !== "ADMIN")) {
     redirect("/login");
   }
 
-  const scheduleId = BigInt(String(formData.get("scheduleId") ?? "0"));
+  const scheduleId = toBigInt(formData.get("scheduleId")) ?? BigInt(0);
   const dateStr = String(formData.get("date") ?? "").trim();
   if (!scheduleId || !dateStr) redirect("/presensi");
 
-  // Tolak tanggal di masa depan — presensi hanya untuk hari berjalan / yang lewat.
+  // Tolak tanggal di masa depan â€” presensi hanya untuk hari berjalan / yang lewat.
   const todayStr = new Date().toISOString().slice(0, 10);
   if (dateStr > todayStr) throw new Error("Tidak bisa membuka presensi untuk tanggal di masa depan");
 
@@ -85,11 +87,12 @@ export async function openSession(formData: FormData) {
 
 export async function saveAttendance(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || (user.role !== "GURU" && user.role !== "ADMIN")) {
     redirect("/login");
   }
 
-  const sessionId = BigInt(String(formData.get("sessionId") ?? "0"));
+  const sessionId = toBigInt(formData.get("sessionId")) ?? BigInt(0);
   const session = await prisma.classSession.findUnique({
     where: { id: sessionId },
     include: { schedule: { include: { assignment: true } } },

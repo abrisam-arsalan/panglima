@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { requireUser, logAudit } from "@/lib/auth";
+import { requireAdminSurface, logAudit, assertPinClear } from "@/lib/auth";
 import { currentSemester } from "@/lib/academic";
 import { planSiswa, planGuru, planJadwal, planOrtu, planKelas, type ImportKind } from "@/lib/importer";
 import { syncStudentsToCbt } from "@/lib/cbt-sync";
@@ -15,8 +15,8 @@ import { syncStudentsToCbt } from "@/lib/cbt-sync";
 const IMPORT_DIR = path.resolve("storage/imports");
 
 async function guard() {
-  const u = await requireUser();
-  if (u.role !== "ADMIN") throw new Error("Hanya admin");
+  const u = await requireAdminSurface("admin/import");
+  assertPinClear(u);
   return u;
 }
 

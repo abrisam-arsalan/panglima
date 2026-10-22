@@ -12,23 +12,26 @@ import {
 export default async function NilaiPage({
   searchParams,
 }: {
-  searchParams: Promise<{ a?: string; err?: string; ok?: string; n?: string }>;
+  searchParams: Promise<{ a?: string; err?: string; ok?: string; n?: string; childId?: string }>;
 }) {
   const user = await requireUser();
-  const { a, err, ok, n } = await searchParams;
+  const { a, err, ok, n, childId: rawChildId } = await searchParams;
   const ctx = await currentSemester();
   const semesterId = ctx?.semester.id;
 
-  /* ═══ SISI PEMBACA: siswa & ortu — "nilai saya/anak" ═══ */
+  /* ═══ SISI PEMBACA: siswa & ortu — ortu pilih anak via ?childId= ═══ */
   if (user.role === "SISWA" || user.role === "ORTU") {
     let siswaUserId = user.id;
+    let anakList: { id: bigint; nama: string }[] = [];
     if (user.role === "ORTU") {
-      const anak = await prisma.parentLink.findFirst({
+      const links = await prisma.parentLink.findMany({
         where: { parentId: user.id },
-        select: { childId: true },
+        include: { child: { select: { id: true, nama: true } } },
       });
-      if (!anak) return <AppShell user={user} active="/nilai"><div className="empty">Belum ada anak terhubung.</div></AppShell>;
-      siswaUserId = anak.childId;
+      if (!links.length) return <AppShell user={user} active="/nilai"><div className="empty">Belum ada anak terhubung.</div></AppShell>;
+      anakList = links.map((l) => ({ id: l.child.id, nama: l.child.nama }));
+      const valid = rawChildId && links.some((l) => String(l.childId) === String(rawChildId));
+      siswaUserId = valid ? BigInt(String(rawChildId)) : links[0].childId;
     }
     const clsId = await studentClassId(siswaUserId);
     const assigns = clsId ? await classAssignments([clsId], semesterId) : [];
@@ -44,10 +47,24 @@ export default async function NilaiPage({
             <h1>Ketercapaian TP &amp; Nilai Rapor 📊</h1>
             <p>Pilih mata pelajaran untuk melihat ketercapaian Tujuan Pembelajaran.</p>
           </div>
+          {user.role === "ORTU" && anakList.length > 1 && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+              {anakList.map((l) => (
+                <a
+                  key={String(l.id)}
+                  className={`pill ${String(l.id) === String(siswaUserId) ? "hl" : ""}`}
+                  href={`/nilai?childId=${l.id}`}
+                  style={{ padding: "8px 14px", minHeight: 40, display: "inline-flex", alignItems: "center", textDecoration: "none" }}
+                >
+                  👦 {l.nama}
+                </a>
+              ))}
+            </div>
+          )}
           {!assigns.length && <div className="empty">Belum ada data mata pelajaran untuk kelas Anda.</div>}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {assigns.map((x) => (
-              <a className="card" key={String(x.id)} href={`/nilai?a=${x.id}`} style={{ textDecoration: "none", margin: 0 }}>
+              <a className="card" key={String(x.id)} href={`/nilai?a=${x.id}${user.role === "ORTU" ? `&childId=${siswaUserId}` : ""}`} style={{ textDecoration: "none", margin: 0 }}>
                 <div className="card-body" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                   <div style={{ flex: "1 1 200px" }}>
                     <h2 style={{ fontSize: 17, marginBottom: 4 }}>{x.subject.name}</h2>

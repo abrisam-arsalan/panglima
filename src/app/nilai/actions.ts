@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser, logAudit } from "@/lib/auth";
+import { toBigInt } from "@/lib/safe";
+import { getSessionUser, logAudit, assertPinClear } from "@/lib/auth";
 import { canManageAssignment } from "@/lib/academic";
 import { recomputeReports, syncAutoTpScores } from "@/lib/gradebook";
 
 async function guard(assignmentIdRaw: string | FormDataEntryValue | null) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user) redirect("/login");
   const assignmentId = BigInt(String(assignmentIdRaw ?? "0"));
   if (!assignmentId || !(await canManageAssignment(user, assignmentId))) {
@@ -23,11 +25,11 @@ const clampScore = (raw: FormDataEntryValue | null) => {
   return Math.round(v * 100) / 100;
 };
 
-/* ── sel matriks TP ── */
+/* â”€â”€ sel matriks TP â”€â”€ */
 export async function setTpScore(formData: FormData) {
   const { user, assignmentId } = await guard(formData.get("assignmentId"));
-  const tpId = BigInt(String(formData.get("tpId") ?? "0"));
-  const studentId = BigInt(String(formData.get("studentId") ?? "0"));
+  const tpId = toBigInt(formData.get("tpId")) ?? BigInt(0);
+  const studentId = toBigInt(formData.get("studentId")) ?? BigInt(0);
   const back = () => { revalidatePath(`/nilai?a=${assignmentId}`); redirect(`/nilai?a=${assignmentId}`); };
   const tp = await prisma.learningTarget.findFirst({ where: { id: tpId, assignmentId } });
   if (!tp) throw new Error("TP bukan di assignment ini");
@@ -48,11 +50,11 @@ export async function setTpScore(formData: FormData) {
   back();
 }
 
-/* ── flag validasi TR / OP ── */
+/* â”€â”€ flag validasi TR / OP â”€â”€ */
 export async function toggleFlag(formData: FormData) {
   const { assignmentId } = await guard(formData.get("assignmentId"));
-  const tpId = BigInt(String(formData.get("tpId") ?? "0"));
-  const studentId = BigInt(String(formData.get("studentId") ?? "0"));
+  const tpId = toBigInt(formData.get("tpId")) ?? BigInt(0);
+  const studentId = toBigInt(formData.get("studentId")) ?? BigInt(0);
   const type = formData.get("type") === "SANGAT_TERCAPAI" ? "SANGAT_TERCAPAI" : "PERLU_PENINGKATAN";
   const existing = await prisma.tpFlag.findUnique({
     where: { tpId_studentId_type: { tpId, studentId, type } },
@@ -63,7 +65,7 @@ export async function toggleFlag(formData: FormData) {
   redirect(`/nilai?a=${assignmentId}`);
 }
 
-/* ── rekap otomatis ── */
+/* â”€â”€ rekap otomatis â”€â”€ */
 export async function recalculate(formData: FormData) {
   const { user, assignmentId } = await guard(formData.get("assignmentId"));
   const force = formData.get("force") === "1";
@@ -74,10 +76,10 @@ export async function recalculate(formData: FormData) {
   redirect(`/nilai?a=${assignmentId}&ok=rekap&n=${nTp}`);
 }
 
-/* ── koreksi rapor manual ── */
+/* â”€â”€ koreksi rapor manual â”€â”€ */
 export async function setReportScore(formData: FormData) {
   const { user, assignmentId } = await guard(formData.get("assignmentId"));
-  const studentId = BigInt(String(formData.get("studentId") ?? "0"));
+  const studentId = toBigInt(formData.get("studentId")) ?? BigInt(0);
   const score = clampScore(formData.get("score"));
   if (score === null) redirect(`/nilai?a=${assignmentId}&err=nilai`);
   const lama = await prisma.reportScore.findUnique({
@@ -96,7 +98,7 @@ export async function setReportScore(formData: FormData) {
   redirect(`/nilai?a=${assignmentId}`);
 }
 
-/* ── asesmen manual (UH / praktik / nilai CBT) ── */
+/* â”€â”€ asesmen manual (UH / praktik / nilai CBT) â”€â”€ */
 export async function addAssessment(formData: FormData) {
   const { assignmentId } = await guard(formData.get("assignmentId"));
   const nama = String(formData.get("nama") ?? "").trim();
@@ -109,7 +111,7 @@ export async function addAssessment(formData: FormData) {
 }
 
 export async function deleteAssessment(formData: FormData) {
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const a = await prisma.manualAssessment.findUnique({ where: { id } });
   if (!a) throw new Error("Tidak ditemukan");
   const { assignmentId } = await guard(String(a.assignmentId));
@@ -119,11 +121,11 @@ export async function deleteAssessment(formData: FormData) {
 }
 
 export async function setAssessmentScore(formData: FormData) {
-  const id = BigInt(String(formData.get("assessmentId") ?? "0"));
+  const id = toBigInt(formData.get("assessmentId")) ?? BigInt(0);
   const a = await prisma.manualAssessment.findUnique({ where: { id } });
   if (!a) throw new Error("Tidak ditemukan");
   const { user, assignmentId } = await guard(String(a.assignmentId));
-  const studentId = BigInt(String(formData.get("studentId") ?? "0"));
+  const studentId = toBigInt(formData.get("studentId")) ?? BigInt(0);
   const score = clampScore(formData.get("score"));
   const lama = await prisma.grade.findFirst({ where: { manualAssessmentId: id, studentId } });
   if (score === null) redirect(`/nilai?a=${assignmentId}&err=nilai`);
@@ -132,7 +134,7 @@ export async function setAssessmentScore(formData: FormData) {
     await prisma.grade.create({
       data: { target: "MANUAL", manualAssessmentId: id, studentId, score: score!, gradedById: user.id },
     });
-  await syncAutoTpScores(assignmentId); // asesmen yg menaut TP → ikut agregasi
+  await syncAutoTpScores(assignmentId); // asesmen yg menaut TP â†’ ikut agregasi
   await recomputeReports(assignmentId);
   await logAudit({
     userId: user.id, action: "ASPEK_SKOR", entity: "grades", entityId: `${id}:${studentId}`,

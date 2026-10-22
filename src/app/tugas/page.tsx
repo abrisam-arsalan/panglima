@@ -25,10 +25,10 @@ const ERRP: Record<string, string> = {
 export default async function TugasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ a?: string; t?: string; err?: string; ok?: string }>;
+  searchParams: Promise<{ a?: string; t?: string; err?: string; ok?: string; childId?: string }>;
 }) {
   const user = await requireUser();
-  const { a, t, err, ok } = await searchParams;
+  const { a, t, err, ok, childId: rawChildId } = await searchParams;
   const ctx = await currentSemester();
   const semesterId = ctx?.semester.id;
   const errMsg = err ? ERRP[err] ?? "Terjadi kesalahan." : null;
@@ -360,21 +360,24 @@ export default async function TugasPage({
     );
   }
 
-  /* ════ SISWA / ORTU (ortu: baca saja utk anak pertama) ════ */
+  /* ════ SISWA / ORTU (ortu: pilih anak via ?childId=, default anak pertama) ════ */
   let siswaUserId = user.id;
+  let anakList: { id: bigint; nama: string }[] = [];
   if (user.role === "ORTU") {
-    const anak = await prisma.parentLink.findFirst({
+    const links = await prisma.parentLink.findMany({
       where: { parentId: user.id },
-      select: { childId: true },
+      include: { child: { select: { id: true, nama: true } } },
     });
-    if (!anak) {
+    if (!links.length) {
       return (
         <AppShell user={user} active="/tugas">
           <div className="empty">Belum ada data anak terhubung — hubungi admin.</div>
         </AppShell>
       );
     }
-    siswaUserId = anak.childId;
+    anakList = links.map((l) => ({ id: l.child.id, nama: l.child.nama }));
+    const valid = rawChildId && links.some((l) => String(l.childId) === String(rawChildId));
+    siswaUserId = valid ? BigInt(String(rawChildId)) : links[0].childId;
   }
   const clsId = await studentClassId(siswaUserId);
   const assigns = clsId ? await classAssignments([clsId], semesterId) : [];
@@ -390,6 +393,8 @@ export default async function TugasPage({
       },
     });
     if (!task || task.status !== "TERBIT") notFound();
+    // P0: tugas TERBIT kelas lain tidak boleh dibuka via URL langsung.
+    if (task.assignment.classId !== clsId) notFound();
     const sub = task.submissions[0];
     const now = new Date();
     const open = !task.dueAt || now <= (task.lateUntil ?? task.dueAt);
@@ -523,14 +528,29 @@ export default async function TugasPage({
         <h1>Daftar Tugas Pembelajaran 📝</h1>
         <p>{user.role === "SISWA" ? "Daftar tugas kelas yang harus dikerjakan semester ini." : "Daftar tugas anak Anda semester ini (mode pantau)."}</p>
       </div>
+      {user.role === "ORTU" && anakList.length > 1 && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+          {anakList.map((l) => (
+            <a
+              key={String(l.id)}
+              className={`pill ${String(l.id) === String(siswaUserId) ? "hl" : ""}`}
+              href={`/tugas?childId=${l.id}`}
+              style={{ padding: "8px 14px", minHeight: 40, display: "inline-flex", alignItems: "center", textDecoration: "none" }}
+            >
+              👦 {l.nama}
+            </a>
+          ))}
+        </div>
+      )}
       {tasks.length === 0 && <div className="empty">Belum ada tugas pembelajaran untuk kelas ini.</div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {tasks.map((tk) => {
           const sub = tk.submissions[0];
           const g = sub?.grades[0];
           const nilai = g ? Number(g.score) : null;
+          const childQ = user.role === "ORTU" ? `&childId=${siswaUserId}` : "";
           return (
-            <a className="card" key={String(tk.id)} href={user.role === "SISWA" ? `/tugas?t=${tk.id}` : "#"} style={{ textDecoration: "none", margin: 0, ...(user.role !== "SISWA" ? { pointerEvents: "none" } : {}) }}>
+            <a className="card" key={String(tk.id)} href={`/tugas?t=${tk.id}${childQ}`} style={{ textDecoration: "none", margin: 0 }}>
               <div className="card-body">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
                   <div>

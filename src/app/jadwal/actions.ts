@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser, logAudit } from "@/lib/auth";
+import { toBigInt } from "@/lib/safe";
+import { getSessionUser, logAudit, assertPinClear } from "@/lib/auth";
 
 export async function addSchedule(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || user.role !== "ADMIN") throw new Error("Hanya admin");
-  const assignmentId = BigInt(String(formData.get("assignmentId") ?? "0"));
+  const assignmentId = toBigInt(formData.get("assignmentId")) ?? BigInt(0);
   const day = Number(formData.get("day"));
   const startTime = String(formData.get("start") ?? "").trim();
   const endTime = String(formData.get("end") ?? "").trim();
@@ -26,7 +28,7 @@ export async function addSchedule(formData: FormData) {
     await prisma.schedule.create({ data: { assignmentId, day, startTime, endTime, room } });
     await logAudit({ userId: user.id, action: "JADWAL_TAMBAH", entity: "schedules", entityId: String(assignmentId) });
   } else if (!exists.isActive) {
-    // Slot pernah dinonaktifkan → aktifkan kembali (bukan duplikat).
+    // Slot pernah dinonaktifkan â†’ aktifkan kembali (bukan duplikat).
     await prisma.schedule.update({
       where: { id: exists.id },
       data: { isActive: true, endTime, room },
@@ -44,8 +46,9 @@ export async function addSchedule(formData: FormData) {
  */
 export async function deleteSchedule(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || user.role !== "ADMIN") throw new Error("Hanya admin");
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const assignmentId = String(formData.get("assignmentId") ?? "");
   const purge = String(formData.get("purge") ?? "") === "1";
 
@@ -67,8 +70,9 @@ export async function deleteSchedule(formData: FormData) {
 /** Aktifkan kembali jadwal nonaktif. */
 export async function activateSchedule(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || user.role !== "ADMIN") throw new Error("Hanya admin");
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const assignmentId = String(formData.get("assignmentId") ?? "");
   await prisma.schedule.update({ where: { id }, data: { isActive: true } });
   await logAudit({ userId: user.id, action: "JADWAL_AKTIF", entity: "schedules", entityId: String(id) });

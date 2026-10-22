@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser, logAudit } from "@/lib/auth";
+import { toBigInt } from "@/lib/safe";
+import { getSessionUser, logAudit, assertPinClear } from "@/lib/auth";
 import { notifyClass } from "@/lib/notify";
 
 export async function createAnnouncement(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || !["ADMIN", "GURU"].includes(user.role)) throw new Error("Tidak berhak");
   const judul = String(formData.get("judul") ?? "").trim();
   const isi = String(formData.get("isi") ?? "").trim();
@@ -32,11 +34,11 @@ export async function createAnnouncement(formData: FormData) {
   });
   await logAudit({ userId: user.id, action: "PENGUMUMAN_BARU", entity: "announcements", entityId: String(p.id) });
 
-  // Notifikasi hemat: KELAS → sebar ke anggota kelas (notifyClass batch);
-  // SEMUA (sekolah) → TIDAK sebar per-user (N+1 untuk ribuan akun).
+  // Notifikasi hemat: KELAS â†’ sebar ke anggota kelas (notifyClass batch);
+  // SEMUA (sekolah) â†’ TIDAK sebar per-user (N+1 untuk ribuan akun).
   // Halaman /pengumuman + badge di dashboard membaca Announcement langsung.
   if (classId) {
-    await notifyClass(classId, "pengumuman", `📢 ${judul}`, "/pengumuman");
+    await notifyClass(classId, "pengumuman", `ðŸ“¢ ${judul}`, "/pengumuman");
   }
   revalidatePath("/pengumuman");
   redirect("/pengumuman");
@@ -44,8 +46,9 @@ export async function createAnnouncement(formData: FormData) {
 
 export async function deleteAnnouncement(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user) redirect("/login");
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const p = await prisma.announcement.findUnique({ where: { id } });
   if (!p) return;
   if (user.role !== "ADMIN" && p.authorId !== user.id) throw new Error("Bukan punyamu");

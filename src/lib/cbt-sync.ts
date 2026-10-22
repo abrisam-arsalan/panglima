@@ -29,26 +29,41 @@ export async function getCbtExamsForUser(user: User): Promise<CbtExamItem[]> {
       ORDER BY e.start_at DESC, e.id DESC
     `);
 
-    if (user.role !== "SISWA") {
+    if (user.role !== "SISWA" && user.role !== "ORTU") {
       return raw;
     }
 
-    // Untuk siswa, filter berdasarkan rombel / jenjang siswa
-    const student = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { classRef: { select: { name: true, tingkat: true } } },
-    });
-
-    const myClassName = student?.classRef?.name;
-    const myTingkat = student?.classRef?.tingkat ? String(student.classRef.tingkat) : null;
+    // Siswa: rombelnya sendiri. ORTU: gabungan rombel SEMUA anaknya.
+    const targets: { name?: string | null; tingkat?: string | null }[] = [];
+    if (user.role === "SISWA") {
+      const student = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { classRef: { select: { name: true, tingkat: true } } },
+      });
+      targets.push({
+        name: student?.classRef?.name,
+        tingkat: student?.classRef?.tingkat ? String(student.classRef.tingkat) : null,
+      });
+    } else {
+      const links = await prisma.parentLink.findMany({
+        where: { parentId: user.id },
+        include: { child: { select: { classRef: { select: { name: true, tingkat: true } } } } },
+      });
+      for (const l of links) {
+        targets.push({
+          name: l.child.classRef?.name,
+          tingkat: l.child.classRef?.tingkat ? String(l.child.classRef.tingkat) : null,
+        });
+      }
+    }
 
     return raw.filter((e) => {
       // Jika ujian umum untuk semua
       if (!e.class_id && !e.grade) return true;
-      // Jika ada target rombel
-      if (myClassName && e.class_name && e.class_name.toLowerCase() === myClassName.toLowerCase()) return true;
-      // Jika ada target jenjang/tingkat (7, 8, atau 9)
-      if (myTingkat && e.grade && String(e.grade) === myTingkat) return true;
+      for (const t of targets) {
+        if (t.name && e.class_name && e.class_name.toLowerCase() === t.name.toLowerCase()) return true;
+        if (t.tingkat && e.grade && String(e.grade) === t.tingkat) return true;
+      }
       return false;
     });
   } catch (err) {

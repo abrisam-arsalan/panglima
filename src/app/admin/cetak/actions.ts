@@ -35,10 +35,10 @@ export async function previewPts(formData: FormData) {
     redirect("/admin/cetak?err=" + encodeURIComponent(e instanceof Error ? e.message : "Gagal membaca sheet"));
   }
   const { rows, mapels, problems } = planPts(text);
-  if (problems.length) redirect("/admin/cetak?err=" + encodeURIComponent(problems.join(" · ")));
+  if (problems.length) redirect("/admin/cetak?err=" + encodeURIComponent(problems.join(" Â· ")));
   if (!rows.length) redirect("/admin/cetak?err=" + encodeURIComponent("Tidak ada baris siswa terbaca"));
 
-  // Cocokkan nama → siswa portal (per rombel), hitung statistik preview.
+  // Cocokkan nama â†’ siswa portal (per rombel), hitung statistik preview.
   const ctx = await currentSemester();
   const okRows = rows.filter((r) => r.status === "OK");
   const rombels = [...new Set(okRows.map((r) => r.rombel))];
@@ -85,13 +85,13 @@ export async function commitPts(formData: FormData) {
   const label = String(formData.get("label") ?? "").trim() || "PTS";
   const { decryptPreview } = await import("@/lib/pts-preview");
   const text = await decryptPreview(rev);
-  if (!text) redirect("/admin/cetak?err=" + encodeURIComponent("Sesi preview kedaluwarsa — ulangi preview"));
+  if (!text) redirect("/admin/cetak?err=" + encodeURIComponent("Sesi preview kedaluwarsa â€” ulangi preview"));
 
   const { rows } = planPts(text);
   const ctx = await currentSemester();
   if (!ctx) redirect("/admin/cetak?err=" + encodeURIComponent("Tahun ajaran aktif belum diset"));
 
-  // Cache: rombel → assignment per mapel; siswa per rombel+nama.
+  // Cache: rombel â†’ assignment per mapel; siswa per rombel+nama.
   const subjectCache = new Map<string, bigint>();
   const allSubjects = await prisma.subject.findMany({ select: { id: true, name: true, code: true } });
   for (const s of allSubjects) {
@@ -127,12 +127,12 @@ export async function commitPts(formData: FormData) {
       continue;
     }
     for (const cell of r.nilai) {
-      // Mapel sheet → subject portal (cocok nama; bila belum ada, BUAT subject + assignment tanpa guru? TIDAK —
+      // Mapel sheet â†’ subject portal (cocok nama; bila belum ada, BUAT subject + assignment tanpa guru? TIDAK â€”
       // nilai PTS butuh assignment. Subject dibuat, assignment dibuat TANPA guru bila belum ada? Assignment wajib
-      // teacherId. Solusi: cari assignment mapel×rombel×semester apa pun gurunya; bila tak ada → lewati + lapor.
+      // teacherId. Solusi: cari assignment mapelÃ—rombelÃ—semester apa pun gurunya; bila tak ada â†’ lewati + lapor.
       const subjectId = subjectCache.get(cell.mapel.toUpperCase());
       if (!subjectId) {
-        if (errors.length < 50) errors.push(`baris ${r.line}: mapel '${cell.mapel}' belum ada di portal — tambahkan di Penugasan dulu`);
+        if (errors.length < 50) errors.push(`baris ${r.line}: mapel '${cell.mapel}' belum ada di portal â€” tambahkan di Penugasan dulu`);
         lewati++;
         continue;
       }
@@ -144,7 +144,7 @@ export async function commitPts(formData: FormData) {
           select: { id: true },
         });
         if (!asg) {
-          if (errors.length < 50) errors.push(`baris ${r.line}: penugasan ${cell.mapel} × ${r.rombel} belum ada — buat di Penugasan dulu`);
+          if (errors.length < 50) errors.push(`baris ${r.line}: penugasan ${cell.mapel} Ã— ${r.rombel} belum ada â€” buat di Penugasan dulu`);
           lewati++;
           continue;
         }

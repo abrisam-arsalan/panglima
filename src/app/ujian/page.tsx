@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/app-shell";
 import { getCbtExamsForUser } from "@/lib/cbt-sync";
 import { broadcastExamsAction, launchCbt, syncStudentsAction } from "./actions";
@@ -22,6 +23,14 @@ export default async function UjianPortalPage() {
   const isStudent = user.role === "SISWA" || user.role === "ORTU";
   const isTeacher = user.role === "GURU";
   const isAdmin = user.role === "ADMIN";
+
+  // ORTU: daftar anak untuk kredensial + handoff per anak.
+  const anakOrtu = user.role === "ORTU"
+    ? await prisma.parentLink.findMany({
+        where: { parentId: user.id },
+        include: { child: { select: { id: true, nama: true, nisn: true, username: true } } },
+      }).catch(() => [])
+    : [];
 
   return (
     <AppShell user={user} active="/ujian">
@@ -133,14 +142,30 @@ export default async function UjianPortalPage() {
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-                <div className="list-row" style={{ margin: 0, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-                  <span>👤 <b>Username Login Siswa:</b></span>
-                  <span className="pill"><code>{user.nisn || user.username}</code> (NISN Anda)</span>
-                </div>
-                <div className="list-row" style={{ margin: 0, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-                  <span>🔑 <b>Password / PIN Siswa:</b></span>
-                  <span className="meta">Gunakan PIN yang sama dengan portal (minta ke wali kelas bila lupa)</span>
-                </div>
+                {user.role === "ORTU" ? (
+                  anakOrtu.map((l) => (
+                    <div key={String(l.childId)} className="list-row" style={{ margin: 0, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                      <span>👦 <b>{l.child.nama}</b> — <code>{l.child.nisn || l.child.username}</code></span>
+                      <form action={launchCbt}>
+                        <input type="hidden" name="childId" value={String(l.childId)} />
+                        <button className="btn btn-sm btn-primary" type="submit" style={{ minHeight: 44 }}>
+                          🚀 Bukakan Ujian
+                        </button>
+                      </form>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="list-row" style={{ margin: 0, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                      <span>👤 <b>Username Login Siswa:</b></span>
+                      <span className="pill"><code>{user.nisn || user.username}</code> (NISN Anda)</span>
+                    </div>
+                    <div className="list-row" style={{ margin: 0, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                      <span>🔑 <b>Password / PIN Siswa:</b></span>
+                      <span className="meta">Gunakan PIN yang sama dengan portal (minta ke wali kelas bila lupa)</span>
+                    </div>
+                  </>
+                )}
                 <div className="list-row" style={{ margin: 0, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                   <span>🌐 <b>Alamat Server Ujian CBT:</b></span>
                   <code style={{ fontSize: 13 }}>{cbtBaseUrl}/login</code>

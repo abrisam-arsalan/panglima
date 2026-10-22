@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { toBigInt } from "@/lib/safe";
 import { getSessionUser, logAudit } from "@/lib/auth";
 import { canManageAssignment } from "@/lib/academic";
 
@@ -16,7 +17,7 @@ async function guardEdit(assignmentId: bigint) {
 }
 
 export async function createTp(formData: FormData) {
-  const assignmentId = BigInt(String(formData.get("assignmentId") ?? "0"));
+  const assignmentId = toBigInt(formData.get("assignmentId")) ?? BigInt(0);
   const code = String(formData.get("code") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
   const user = await guardEdit(assignmentId);
@@ -35,8 +36,8 @@ export async function createTp(formData: FormData) {
 }
 
 export async function updateTp(formData: FormData) {
-  const id = BigInt(String(formData.get("id") ?? "0"));
-  const assignmentId = BigInt(String(formData.get("assignmentId") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
+  const assignmentId = toBigInt(formData.get("assignmentId")) ?? BigInt(0);
   const code = String(formData.get("code") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
   const urutan = Math.max(0, Number(formData.get("urutan") ?? 0) || 0);
@@ -60,7 +61,7 @@ export async function updateTp(formData: FormData) {
  * Bonus: hitung baris roster (kolom NISN) utk laporan kecocokan.
  */
 export async function importTpTemplate(formData: FormData) {
-  const assignmentId = BigInt(String(formData.get("assignmentId") ?? "0"));
+  const assignmentId = toBigInt(formData.get("assignmentId")) ?? BigInt(0);
   const user = await guardEdit(assignmentId);
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) redirect(`/tp/${assignmentId}?err=1`);
@@ -112,8 +113,8 @@ export async function importTpTemplate(formData: FormData) {
 }
 
 export async function deleteTp(formData: FormData) {
-  const id = BigInt(String(formData.get("id") ?? "0"));
-  const assignmentId = BigInt(String(formData.get("assignmentId") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
+  const assignmentId = toBigInt(formData.get("assignmentId")) ?? BigInt(0);
   const user = await guardEdit(assignmentId);
   await prisma.learningTarget.deleteMany({ where: { id, assignmentId } });
   await logAudit({ userId: user.id, action: "TP_HAPUS", entity: "learning_targets", entityId: String(id) });

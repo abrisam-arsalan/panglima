@@ -3,13 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser, logAudit } from "@/lib/auth";
+import { toBigInt } from "@/lib/safe";
+import { getSessionUser, logAudit, assertPinClear } from "@/lib/auth";
 import { canManageAssignment } from "@/lib/academic";
 import { notifyClass, createNotification } from "@/lib/notify";
 import { saveFile, removeStored } from "@/lib/storage";
 
 async function guardManage(assignmentIdRaw: string | null) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user) redirect("/login");
   const assignmentId = BigInt(assignmentIdRaw ?? "0");
   if (!assignmentId || !(await canManageAssignment(user, assignmentId))) {
@@ -20,20 +22,37 @@ async function guardManage(assignmentIdRaw: string | null) {
 
 const dt = (v: FormDataEntryValue | null) => (v && String(v) ? new Date(String(v)) : null);
 
+/** TP harus milik assignment yang sama — cegah taut silang assignment. */
+async function resolveTp(assignmentId: bigint, raw: FormDataEntryValue | null): Promise<bigint | null> {
+  const s = String(raw ?? "").trim();
+  if (!s || !/^\d+$/.test(s)) return null;
+  const tp = await prisma.learningTarget.findFirst({
+    where: { id: BigInt(s), assignmentId },
+    select: { id: true },
+  });
+  return tp?.id ?? null;
+}
+
 export async function createTask(formData: FormData) {
   const { user, assignmentId } = await guardManage(String(formData.get("assignmentId") ?? null));
-  const judul = String(formData.get("judul") ?? "").trim();
+  const judul = String(formData.get("judul") ?? "").trim().slice(0, 200);
   if (!judul) redirect(`/tugas?a=${assignmentId}`);
   const tipe = ["FILE", "TEKS", "CENTANG"].includes(String(formData.get("tipe")))
     ? String(formData.get("tipe")) : "FILE";
   const due = dt(formData.get("dueAt")) ?? new Date(Date.now() + 7 * 86_400_000);
+  const lateUntil = dt(formData.get("lateUntil"));
+  if (lateUntil && lateUntil < due) {
+    redirect(`/tugas?a=${assignmentId}&err=${encodeURIComponent("Toleransi harus setelah tenggat")}`);
+  }
+  const instruksi = String(formData.get("instruksi") ?? "").slice(0, 20000);
+  const tpId = await resolveTp(assignmentId, formData.get("tpId"));
   const t = await prisma.task.create({
     data: {
       assignmentId,
       judul,
-      instruksi: String(formData.get("instruksi") ?? ""),
+      instruksi,
       tipe: tipe as "FILE" | "TEKS" | "CENTANG",
-      tpId: formData.get("tpId") ? BigInt(String(formData.get("tpId"))) : null,
+      tpId,
       dueAt: due,
       lateUntil: dt(formData.get("lateUntil")),
       status: formData.get("status") === "TERBIT" ? "TERBIT" : "DRAF",
@@ -49,23 +68,27 @@ export async function createTask(formData: FormData) {
 
 export async function updateTask(formData: FormData) {
   const { user, assignmentId } = await guardManage(String(formData.get("assignmentId") ?? null));
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const lama = await prisma.task.findFirst({ where: { id, assignmentId, deletedAt: null } });
   if (!lama) throw new Error("Tugas tidak ditemukan");
-  const judul = String(formData.get("judul") ?? "").trim() || lama.judul;
+  const judul = String(formData.get("judul") ?? "").trim().slice(0, 200) || lama.judul;
   const tipeRaw = String(formData.get("tipe") ?? lama.tipe);
   const tipe = (["FILE", "TEKS", "CENTANG"].includes(tipeRaw) ? tipeRaw : lama.tipe) as "FILE" | "TEKS" | "CENTANG";
   const status = formData.get("status") === "TERBIT" ? "TERBIT" : "DRAF";
   const due = dt(formData.get("dueAt")) ?? lama.dueAt;
+  const lateUntil = dt(formData.get("lateUntil"));
+  if (lateUntil && lateUntil < due) {
+    redirect(`/tugas?a=${assignmentId}&err=${encodeURIComponent("Toleransi harus setelah tenggat")}`);
+  }
   await prisma.task.update({
     where: { id },
     data: {
       judul,
-      instruksi: String(formData.get("instruksi") ?? lama.instruksi),
+      instruksi: String(formData.get("instruksi") ?? lama.instruksi).slice(0, 20000),
       tipe,
-      tpId: formData.get("tpId") ? BigInt(String(formData.get("tpId"))) : null,
+      tpId: await resolveTp(assignmentId, formData.get("tpId")),
       dueAt: due,
-      lateUntil: dt(formData.get("lateUntil")),
+      lateUntil,
       status,
       publishAt: status === "TERBIT" && !lama.publishAt ? new Date() : lama.publishAt,
     },
@@ -82,26 +105,26 @@ async function notifyTask(taskId: bigint) {
   });
   if (!t) return;
   const due = t.dueAt
-    ? ` — tenggat ${t.dueAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`
+    ? ` â€” tenggat ${t.dueAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`
     : "";
   await notifyClass(
     t.assignment.classId,
     "tugas_baru",
-    `📝 Tugas baru: ${t.judul} (${t.assignment.class.name} · ${t.assignment.subject.name})${due}`,
+    `ðŸ“ Tugas baru: ${t.judul} (${t.assignment.class.name} Â· ${t.assignment.subject.name})${due}`,
     "/tugas",
   );
 }
 
 export async function deleteTask(formData: FormData) {
   const { user, assignmentId } = await guardManage(String(formData.get("assignmentId") ?? null));
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   await prisma.task.updateMany({ where: { id, assignmentId }, data: { deletedAt: new Date() } });
   await logAudit({ userId: user.id, action: "TUGAS_HAPUS", entity: "tasks", entityId: String(id) });
   revalidatePath("/tugas");
 }
 
 export async function uploadTaskFile(formData: FormData) {
-  const taskId = BigInt(String(formData.get("taskId") ?? "0"));
+  const taskId = toBigInt(formData.get("taskId")) ?? BigInt(0);
   const t = await prisma.task.findUnique({ where: { id: taskId } });
   if (!t) throw new Error("Tugas tidak ada");
   await guardManage(String(t.assignmentId));
@@ -125,7 +148,7 @@ export async function uploadTaskFile(formData: FormData) {
 }
 
 export async function deleteTaskFile(formData: FormData) {
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const f = await prisma.taskFile.findUnique({ where: { id }, include: { task: true } });
   if (!f) return;
   await guardManage(String(f.task.assignmentId));
@@ -136,8 +159,9 @@ export async function deleteTaskFile(formData: FormData) {
 
 export async function submitTask(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || user.role !== "SISWA") throw new Error("Hanya siswa yang dapat mengumpulkan");
-  const taskId = BigInt(String(formData.get("taskId") ?? "0"));
+  const taskId = toBigInt(formData.get("taskId")) ?? BigInt(0);
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: { assignment: { include: { class: true } }, submissions: { where: { studentId: user.id } } },
@@ -198,9 +222,10 @@ export async function submitTask(formData: FormData) {
 
 export async function markCompletedByTeacher(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user) redirect("/login");
-  const taskId = BigInt(String(formData.get("taskId") ?? "0"));
-  const studentId = BigInt(String(formData.get("studentId") ?? "0"));
+  const taskId = toBigInt(formData.get("taskId")) ?? BigInt(0);
+  const studentId = toBigInt(formData.get("studentId")) ?? BigInt(0);
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: { assignment: true },
@@ -218,15 +243,16 @@ export async function markCompletedByTeacher(formData: FormData) {
     update: {},
   });
   await logAudit({ userId: user.id, action: "TUGAS_TANDAI", entity: "submissions", entityId: `${taskId}:${studentId}` });
-  await createNotification(studentId, "tugas_selesai", `📝 ${task.judul} ditandai selesai oleh guru — tunggu nilai`, `/tugas?t=${taskId}`);
+  await createNotification(studentId, "tugas_selesai", `ðŸ“ ${task.judul} ditandai selesai oleh guru â€” tunggu nilai`, `/tugas?t=${taskId}`);
   revalidatePath("/tugas");
   redirect(`/tugas?t=${taskId}`);
 }
 
 export async function gradeSubmission(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user) redirect("/login");
-  const submissionId = BigInt(String(formData.get("submissionId") ?? "0"));
+  const submissionId = toBigInt(formData.get("submissionId")) ?? BigInt(0);
   const sub = await prisma.submission.findUnique({
     where: { id: submissionId },
     include: { task: { include: { assignment: true } } },
@@ -254,7 +280,7 @@ export async function gradeSubmission(formData: FormData) {
     userId: user.id, action: "NILAI_SIMPAN", entity: "grades", entityId: String(sub.taskId),
     detail: { lama: lama ? Number(lama.score) : null, baru: score, siswa: String(sub.studentId) },
   });
-  const msg = `🎯 Nilai keluar: ${sub.task.judul} — ${score}`;
+  const msg = `ðŸŽ¯ Nilai keluar: ${sub.task.judul} â€” ${score}`;
   await createNotification(sub.studentId, "nilai_keluar", msg, `/tugas?t=${sub.taskId}`);
   const parentLinks = await prisma.parentLink.findMany({ where: { childId: sub.studentId }, select: { parentId: true } });
   for (const p of parentLinks) {

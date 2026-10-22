@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser, logAudit } from "@/lib/auth";
+import { toBigInt } from "@/lib/safe";
+import { getSessionUser, logAudit, assertPinClear } from "@/lib/auth";
 
 async function guard() {
   const user = await getSessionUser();
+  assertPinClear(user);
   // Laporan dibaca ADMIN & KEPSEK (laporan ke kepala sekolah).
   if (!user || (user.role !== "ADMIN" && user.role !== "KEPSEK")) {
     throw new Error("Hanya admin & kepala sekolah");
@@ -14,10 +16,10 @@ async function guard() {
   return user;
 }
 
-/** Ubah status laporan: BARU → DIBACA → DITINDAKLANJUTI. */
+/** Ubah status laporan: BARU â†’ DIBACA â†’ DITINDAKLANJUTI. */
 export async function setFeedbackStatus(formData: FormData) {
   const user = await guard();
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const status = String(formData.get("status") ?? "");
   if (!["BARU", "DIBACA", "DITINDAKLANJUTI"].includes(status)) {
     throw new Error("Status tidak valid");
@@ -45,6 +47,7 @@ export async function setFeedbackStatus(formData: FormData) {
 /** Kelola templat (admin only): tambah / nonaktifkan. */
 export async function addTemplate(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || user.role !== "ADMIN") throw new Error("Hanya admin");
   const label = String(formData.get("label") ?? "").trim().slice(0, 120);
   if (!label) redirect("/admin/laporan?err=" + encodeURIComponent("Label templat wajib diisi"));
@@ -62,8 +65,9 @@ export async function addTemplate(formData: FormData) {
 
 export async function toggleTemplate(formData: FormData) {
   const user = await getSessionUser();
+  assertPinClear(user);
   if (!user || user.role !== "ADMIN") throw new Error("Hanya admin");
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const t = await prisma.feedbackTemplate.findUnique({ where: { id } });
   if (!t) return;
   await prisma.feedbackTemplate.update({ where: { id }, data: { isActive: !t.isActive } });

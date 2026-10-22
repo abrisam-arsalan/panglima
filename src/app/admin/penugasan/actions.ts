@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { toBigInt } from "@/lib/safe";
 import { requireUser, logAudit } from "@/lib/auth";
 import { currentSemester } from "@/lib/academic";
 
@@ -14,9 +15,9 @@ async function guard() {
 
 export async function createAssignment(formData: FormData) {
   const admin = await guard();
-  const teacherUserId = BigInt(String(formData.get("teacherUserId") ?? "0"));
-  const subjectId = BigInt(String(formData.get("subjectId") ?? "0"));
-  const classId = BigInt(String(formData.get("classId") ?? "0"));
+  const teacherUserId = toBigInt(formData.get("teacherUserId")) ?? BigInt(0);
+  const subjectId = toBigInt(formData.get("subjectId")) ?? BigInt(0);
+  const classId = toBigInt(formData.get("classId")) ?? BigInt(0);
   const ctx = await currentSemester();
   if (!ctx) redirect("/admin/penugasan?err=" + encodeURIComponent("Tahun ajaran aktif belum ditentukan"));
   if (!teacherUserId || !subjectId || !classId) redirect("/admin/penugasan?err=" + encodeURIComponent("Lengkapi guru, mata pelajaran, dan rombel"));
@@ -38,7 +39,7 @@ export async function createAssignment(formData: FormData) {
 
 export async function deleteAssignment(formData: FormData) {
   const admin = await guard();
-  const id = BigInt(String(formData.get("id") ?? "0"));
+  const id = toBigInt(formData.get("id")) ?? BigInt(0);
   const counts = await prisma.assignment.findUnique({
     where: { id },
     select: { _count: { select: { materials: true, tasks: true, learningTargets: true, schedules: true } } },
@@ -57,8 +58,8 @@ export async function deleteAssignment(formData: FormData) {
 
 export async function setHomeroom(formData: FormData) {
   const admin = await guard();
-  const classId = BigInt(String(formData.get("classId") ?? "0"));
-  const userId = BigInt(String(formData.get("homeroomUserId") ?? "0")) || null;
+  const classId = toBigInt(formData.get("classId")) ?? BigInt(0);
+  const userId = toBigInt(formData.get("homeroomUserId")) ?? null;
   if (!classId) return;
   await prisma.class.update({ where: { id: classId }, data: { homeroomUserId: userId } });
   await logAudit({ userId: admin.id, action: "WALI_SET", entity: "classes", entityId: String(classId), detail: { guru: userId?.toString() ?? null } });

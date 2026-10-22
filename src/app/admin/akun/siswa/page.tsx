@@ -21,10 +21,13 @@ export default async function AkunSiswaPage({
     created?: string;
     existing?: string;
     skipped?: string;
+    pinShow?: string;
   }>;
 }) {
   const me = await requireAdminSurface("admin/akun/siswa");
-  const { q, classId: rawClassId, err, msg, done, created, existing, skipped } = await searchParams;
+  const { q, classId: rawClassId, err, msg, done, created, existing, skipped, pinShow } = await searchParams;
+  const { readPinShow } = await import("@/lib/pin-show");
+  const pinInfo = pinShow ? await readPinShow(me.id, pinShow) : null;
   const ctx = await currentSemester();
 
   const [students, classes] = await Promise.all([
@@ -66,26 +69,31 @@ export default async function AkunSiswaPage({
 
       <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1>Data Siswa ðŸŽ“</h1>
+          <h1>Data Siswa Ã°Å¸Å½â€œ</h1>
           <p>Kelola data siswa, PIN login ujian, dan rombel. Seluruh akun siswa otomatis disinkronkan ke platform Ujian (CBT).</p>
         </div>
         <form action={syncStudentsAction}>
           <button className="btn btn-sm btn-yellow" type="submit">
-            ðŸ”„ Sinkronkan Seluruh Siswa ke CBT
+            Ã°Å¸â€â€ž Sinkronkan Seluruh Siswa ke CBT
           </button>
         </form>
       </div>
 
       <AccountNav activeTab="siswa" />
 
-      {msg && <div className="alert alert-success">âœ“ {decodeURIComponent(msg)}</div>}
-      {err && <div className="alert alert-error">âœ• {decodeURIComponent(err)}</div>}
+      {msg && <div className="alert alert-success">Ã¢Å“â€œ {decodeURIComponent(msg)}</div>}
+      {err && <div className="alert alert-error">Ã¢Å“â€¢ {decodeURIComponent(err)}</div>}
+      {pinShow && (
+        <div className="alert alert-info">
+          {pinInfo ? (<>PIN baru <b>{pinInfo.nama}</b>: <code style={{ fontSize: 18 }}>{pinInfo.pin}</code> — catat sekarang, pesan ini kedaluwarsa 5 menit.</>) : (<>Tautan PIN kedaluwarsa — ulangi reset bila perlu.</>)}
+        </div>
+      )}
       {done && (
         <div className="alert alert-info" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <span><b>Hasil Impor Siswa:</b></span>
-          <span className="badge badge-green">âœ“ Ditambahkan: {created ?? 0}</span>
-          <span className="badge badge-yellow">â„¹ Sudah Ada: {existing ?? 0}</span>
-          {Number(skipped) > 0 && <span className="badge badge-red">âœ• Gagal: {skipped}</span>}
+          <span className="badge badge-green">Ã¢Å“â€œ Ditambahkan: {created ?? 0}</span>
+          <span className="badge badge-yellow">Ã¢â€žÂ¹ Sudah Ada: {existing ?? 0}</span>
+          {Number(skipped) > 0 && <span className="badge badge-red">Ã¢Å“â€¢ Gagal: {skipped}</span>}
           <span className="pill" style={{ marginLeft: "auto" }}>Otomatis tersinkron ke Ujian (CBT)</span>
         </div>
       )}
@@ -95,7 +103,7 @@ export default async function AkunSiswaPage({
         {/* Bulk Upload Siswa */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2>ðŸ“¥ Impor Massal Siswa (CSV)</h2>
+            <h2>Ã°Å¸â€œÂ¥ Impor Massal Siswa (CSV)</h2>
             <a href="/api/templates/siswa" download className="btn btn-sm btn-yellow" style={{ textDecoration: "none" }}>
               Unduh Template
             </a>
@@ -109,7 +117,7 @@ export default async function AkunSiswaPage({
               <input type="hidden" name="redirectUrl" value="/admin/akun/siswa" />
               <input className="input" type="file" name="file" accept=".csv,text/csv" required style={{ minHeight: 38 }} />
               <button className="btn btn-primary" type="submit">
-                ðŸ“¤ Unggah &amp; Impor Siswa
+                Ã°Å¸â€œÂ¤ Unggah &amp; Impor Siswa
               </button>
             </form>
           </div>
@@ -118,7 +126,7 @@ export default async function AkunSiswaPage({
         {/* Tambah Siswa Manual */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head">
-            <h2>âž• Tambah Siswa Manual</h2>
+            <h2>Ã¢Å¾â€¢ Tambah Siswa Manual</h2>
           </div>
           <div className="card-body">
             <form action={addStudentAction} style={{ display: "grid", gap: 10 }}>
@@ -136,7 +144,7 @@ export default async function AkunSiswaPage({
                 <div>
                   <label className="field-label">Rombel / Kelas</label>
                   <select className="input" name="classId" defaultValue="">
-                    <option value="">â€” Belum Ditentukan â€”</option>
+                    <option value="">Ã¢â‚¬â€ Belum Ditentukan Ã¢â‚¬â€</option>
                     {classes.map((c) => (
                       <option key={String(c.id)} value={String(c.id)}>
                         {c.name} (Kelas {c.tingkat})
@@ -209,7 +217,7 @@ export default async function AkunSiswaPage({
                     {s.classRef ? (
                       <span className="badge badge-yellow">{s.classRef.name}</span>
                     ) : (
-                      <span className="muted">â€” belum ada â€”</span>
+                      <span className="muted">Ã¢â‚¬â€ belum ada Ã¢â‚¬â€</span>
                     )}
                   </td>
                   <td>
