@@ -11,7 +11,7 @@
 # dan SEED data (PRD v2 D4: data fresh dari roster resmi, bukan bootstrap lama).
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/abrisam-arsalan/lms.git}"
+REPO_URL="${REPO_URL:-https://github.com/abrisam-arsalan/panglima.git}"
 APP=/var/www/panglima
 KRED=/root/panglima-kredensial.txt
 NEED_MAJOR=22
