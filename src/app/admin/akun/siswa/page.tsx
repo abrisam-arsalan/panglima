@@ -69,20 +69,20 @@ export default async function AkunSiswaPage({
 
       <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1>Data Siswa Ã°Å¸Å½â€œ</h1>
+          <h1>Data Siswa 🎓</h1>
           <p>Kelola siswa dan PIN ujian.</p>
         </div>
         <form action={syncStudentsAction}>
           <button className="btn btn-sm btn-yellow" type="submit">
-            Ã°Å¸â€â€ž Sinkronkan Seluruh Siswa ke CBT
+            🔄 Sinkronkan Seluruh Siswa ke CBT
           </button>
         </form>
       </div>
 
       <AccountNav activeTab="siswa" />
 
-      {msg && <div className="alert alert-success">Ã¢Å“â€œ {decodeURIComponent(msg)}</div>}
-      {err && <div className="alert alert-error">Ã¢Å“â€¢ {decodeURIComponent(err)}</div>}
+      {msg && <div className="alert alert-success">✓ {decodeURIComponent(msg)}</div>}
+      {err && <div className="alert alert-error">✕ {decodeURIComponent(err)}</div>}
       {pinShow && (
         <div className="alert alert-info">
           {pinInfo ? (<>PIN baru <b>{pinInfo.nama}</b>: <code style={{ fontSize: 18 }}>{pinInfo.pin}</code> — catat sekarang, pesan ini kedaluwarsa 5 menit.</>) : (<>Tautan PIN kedaluwarsa — ulangi reset bila perlu.</>)}
@@ -91,9 +91,9 @@ export default async function AkunSiswaPage({
       {done && (
         <div className="alert alert-info" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <span><b>Hasil Impor Siswa:</b></span>
-          <span className="badge badge-green">Ã¢Å“â€œ Ditambahkan: {created ?? 0}</span>
-          <span className="badge badge-yellow">Ã¢â€žÂ¹ Sudah Ada: {existing ?? 0}</span>
-          {Number(skipped) > 0 && <span className="badge badge-red">Ã¢Å“â€¢ Gagal: {skipped}</span>}
+          <span className="badge badge-green">✓ Ditambahkan: {created ?? 0}</span>
+          <span className="badge badge-yellow">ℹ Sudah Ada: {existing ?? 0}</span>
+          {Number(skipped) > 0 && <span className="badge badge-red">✕ Gagal: {skipped}</span>}
           <span className="pill" style={{ marginLeft: "auto" }}>Otomatis tersinkron ke Ujian (CBT)</span>
         </div>
       )}
@@ -103,7 +103,7 @@ export default async function AkunSiswaPage({
         {/* Bulk Upload Siswa */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2>Ã°Å¸â€œÂ¥ Impor Massal Siswa (CSV)</h2>
+            <h2>📥 Impor Massal Siswa (CSV)</h2>
             <a href="/api/templates/siswa" download className="btn btn-sm btn-yellow" style={{ textDecoration: "none" }}>
               Unduh Template
             </a>
@@ -117,7 +117,7 @@ export default async function AkunSiswaPage({
               <input type="hidden" name="redirectUrl" value="/admin/akun/siswa" />
               <input className="input" type="file" name="file" accept=".csv,text/csv" required style={{ minHeight: 38 }} />
               <button className="btn btn-primary" type="submit">
-                Ã°Å¸â€œÂ¤ Unggah &amp; Impor Siswa
+                📤 Unggah &amp; Impor Siswa
               </button>
             </form>
           </div>
@@ -126,7 +126,7 @@ export default async function AkunSiswaPage({
         {/* Tambah Siswa Manual */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head">
-            <h2>Ã¢Å¾â€¢ Tambah Siswa Manual</h2>
+            <h2>➕ Tambah Siswa Manual</h2>
           </div>
           <div className="card-body">
             <form action={addStudentAction} style={{ display: "grid", gap: 10 }}>
@@ -144,7 +144,7 @@ export default async function AkunSiswaPage({
                 <div>
                   <label className="field-label">Rombel / Kelas</label>
                   <select className="input" name="classId" defaultValue="">
-                    <option value="">Ã¢â‚¬â€ Belum Ditentukan Ã¢â‚¬â€</option>
+                    <option value="">— Belum Ditentukan —</option>
                     {classes.map((c) => (
                       <option key={String(c.id)} value={String(c.id)}>
                         {c.name} (Kelas {c.tingkat})
@@ -217,7 +217,7 @@ export default async function AkunSiswaPage({
                     {s.classRef ? (
                       <span className="badge badge-yellow">{s.classRef.name}</span>
                     ) : (
-                      <span className="muted">Ã¢â‚¬â€ belum ada Ã¢â‚¬â€</span>
+                      <span className="muted">— belum ada —</span>
                     )}
                   </td>
                   <td>

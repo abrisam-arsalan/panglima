@@ -28,7 +28,7 @@ export async function addSchedule(formData: FormData) {
     await prisma.schedule.create({ data: { assignmentId, day, startTime, endTime, room } });
     await logAudit({ userId: user.id, action: "JADWAL_TAMBAH", entity: "schedules", entityId: String(assignmentId) });
   } else if (!exists.isActive) {
-    // Slot pernah dinonaktifkan â†’ aktifkan kembali (bukan duplikat).
+    // Slot pernah dinonaktifkan → aktifkan kembali (bukan duplikat).
     await prisma.schedule.update({
       where: { id: exists.id },
       data: { isActive: true, endTime, room },

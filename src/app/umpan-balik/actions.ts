@@ -7,7 +7,7 @@ import { toBigInt } from "@/lib/safe";
 import { getSessionUser, logAudit, assertPinClear } from "@/lib/auth";
 
 /**
- * Kirim umpan balik ORTU/SISWA â†’ guru. Satu laporan BARU untuk admin/kepsek
+ * Kirim umpan balik ORTU/SISWA → guru. Satu laporan BARU untuk admin/kepsek
  * dengan penanda sumber (ORTU/SISWA). Guru TIDAK diberi notifikasi langsung
  * (lindungi pengirim, tindak lanjut via kepsek/admin).
  * Siswa: guru harus mengajar kelasnya; childId otomatis = diri sendiri.
@@ -21,7 +21,7 @@ export async function sendFeedback(formData: FormData) {
   const sumber = user.role === "SISWA" ? "SISWA" : "ORTU";
   const teacherId = toBigInt(formData.get("teacherId")) ?? BigInt(0);
   const childIdRaw = String(formData.get("childId") ?? "").trim();
-  // Gabung semua kotak catatan (note, note_1, ...) â€” ortu boleh tambah banyak.
+  // Gabung semua kotak catatan (note, note_1, ...) — ortu boleh tambah banyak.
   const notes: string[] = [];
   for (const [k, v] of formData.entries()) {
     if (k === "note" || /^note_\d+$/.test(k)) {
@@ -70,7 +70,7 @@ export async function sendFeedback(formData: FormData) {
     if (!mengajar) throw new Error("Guru tersebut tidak mengajar kelasmu");
   }
 
-  // Templat harus aktif + sesuai sasaran (SEMUA atau sasarannya) â€” anti suntikan.
+  // Templat harus aktif + sesuai sasaran (SEMUA atau sasarannya) — anti suntikan.
   const validTemplates = templateIds.length
     ? await prisma.feedbackTemplate.findMany({
         where: { id: { in: templateIds }, isActive: true, sasaran: { in: ["SEMUA", sumber] } },
@@ -110,7 +110,7 @@ export async function sendFeedback(formData: FormData) {
       data: admins.map((a) => ({
         userId: a.id,
         kind: "feedback_baru",
-        message: `ðŸ’¬ Umpan balik ${sumber === "SISWA" ? "siswa" : "ortu"} baru untuk guru (laporan #${fb.id})`,
+        message: `💬 Umpan balik ${sumber === "SISWA" ? "siswa" : "ortu"} baru untuk guru (laporan #${fb.id})`,
         link: "/admin/laporan",
       })),
       skipDuplicates: true,

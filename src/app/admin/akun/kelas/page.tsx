@@ -40,20 +40,20 @@ export default async function AkunKelasPage({
       </nav>
 
       <div className="page-head">
-        <h1>Manajemen Kelas &amp; Rombel ðŸ«</h1>
+        <h1>Manajemen Kelas &amp; Rombel 🏫</h1>
         <p>Kelola rombel sekolah.</p>
       </div>
 
       <AccountNav activeTab="kelas" />
 
-      {msg && <div className="alert alert-success">âœ“ {decodeURIComponent(msg)}</div>}
-      {err && <div className="alert alert-error">âœ• {decodeURIComponent(err)}</div>}
+      {msg && <div className="alert alert-success">✓ {decodeURIComponent(msg)}</div>}
+      {err && <div className="alert alert-error">✕ {decodeURIComponent(err)}</div>}
       {done && (
         <div className="alert alert-info" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <span><b>Hasil Impor CSV:</b></span>
-          <span className="badge badge-green">âœ“ Ditambahkan: {created ?? 0}</span>
-          <span className="badge badge-yellow">â„¹ Sudah Ada: {existing ?? 0}</span>
-          {Number(skipped) > 0 && <span className="badge badge-red">âœ• Gagal: {skipped}</span>}
+          <span className="badge badge-green">✓ Ditambahkan: {created ?? 0}</span>
+          <span className="badge badge-yellow">ℹ Sudah Ada: {existing ?? 0}</span>
+          {Number(skipped) > 0 && <span className="badge badge-red">✕ Gagal: {skipped}</span>}
         </div>
       )}
 
@@ -62,7 +62,7 @@ export default async function AkunKelasPage({
         {/* Bulk Upload Card */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2>ðŸ“¥ Impor Massal Kelas (CSV)</h2>
+            <h2>📥 Impor Massal Kelas (CSV)</h2>
             <a href="/api/templates/kelas" download className="btn btn-sm btn-yellow" style={{ textDecoration: "none" }}>
               Unduh Template
             </a>
@@ -76,7 +76,7 @@ export default async function AkunKelasPage({
               <input type="hidden" name="redirectUrl" value="/admin/akun/kelas" />
               <input className="input" type="file" name="file" accept=".csv,text/csv" required style={{ minHeight: 38 }} />
               <button className="btn btn-primary" type="submit">
-                ðŸ“¤ Unggah &amp; Impor Kelas
+                📤 Unggah &amp; Impor Kelas
               </button>
             </form>
           </div>
@@ -85,7 +85,7 @@ export default async function AkunKelasPage({
         {/* Tambah Manual Card */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head">
-            <h2>âž• Tambah Rombel Manual</h2>
+            <h2>➕ Tambah Rombel Manual</h2>
           </div>
           <div className="card-body">
             <form action={addClassAction} style={{ display: "grid", gap: 10 }}>
@@ -139,11 +139,11 @@ export default async function AkunKelasPage({
                 <tr key={String(cls.id)}>
                   <td><b>{cls.name}</b></td>
                   <td><span className="pill">Kelas {cls.tingkat}</span></td>
-                  <td>{cls.homeroom?.nama ?? <span className="muted">â€” belum diset â€”</span>}</td>
+                  <td>{cls.homeroom?.nama ?? <span className="muted">— belum diset —</span>}</td>
                   <td>
                     <span className="badge badge-yellow">{cls._count.members} siswa</span>
                   </td>
-                  <td>{cls.description || "â€”"}</td>
+                  <td>{cls.description || "—"}</td>
                   <td>
                     <span className={`badge ${cls.isActive ? "badge-green" : "badge-neutral"}`}>
                       {cls.isActive ? "Aktif" : "Nonaktif"}

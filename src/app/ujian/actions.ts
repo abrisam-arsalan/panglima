@@ -27,7 +27,7 @@ export async function launchCbt(formData?: FormData) {
     }
   }
 
-  // Handoff portal â†’ CBT (PRD v2 Â§6): terbitkan kode sekali-pakai TTL 60 dtk,
+  // Handoff portal → CBT (PRD v2 §6): terbitkan kode sekali-pakai TTL 60 dtk,
   // redirect ke /sso?kode=... agar user tidak mengetik ulang kredensial.
   // Login manual di CBT TETAP berfungsi sebagai fallback (syarat ujian).
   // Selama CBT lama belum di-update (belum ada route /sso), set

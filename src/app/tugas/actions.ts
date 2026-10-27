@@ -105,12 +105,12 @@ async function notifyTask(taskId: bigint) {
   });
   if (!t) return;
   const due = t.dueAt
-    ? ` â€” tenggat ${t.dueAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`
+    ? ` — tenggat ${t.dueAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`
     : "";
   await notifyClass(
     t.assignment.classId,
     "tugas_baru",
-    `ðŸ“ Tugas baru: ${t.judul} (${t.assignment.class.name} Â· ${t.assignment.subject.name})${due}`,
+    `📝 Tugas baru: ${t.judul} (${t.assignment.class.name} · ${t.assignment.subject.name})${due}`,
     "/tugas",
   );
 }
@@ -243,7 +243,7 @@ export async function markCompletedByTeacher(formData: FormData) {
     update: {},
   });
   await logAudit({ userId: user.id, action: "TUGAS_TANDAI", entity: "submissions", entityId: `${taskId}:${studentId}` });
-  await createNotification(studentId, "tugas_selesai", `ðŸ“ ${task.judul} ditandai selesai oleh guru â€” tunggu nilai`, `/tugas?t=${taskId}`);
+  await createNotification(studentId, "tugas_selesai", `📝 ${task.judul} ditandai selesai oleh guru — tunggu nilai`, `/tugas?t=${taskId}`);
   revalidatePath("/tugas");
   redirect(`/tugas?t=${taskId}`);
 }
@@ -280,7 +280,7 @@ export async function gradeSubmission(formData: FormData) {
     userId: user.id, action: "NILAI_SIMPAN", entity: "grades", entityId: String(sub.taskId),
     detail: { lama: lama ? Number(lama.score) : null, baru: score, siswa: String(sub.studentId) },
   });
-  const msg = `ðŸŽ¯ Nilai keluar: ${sub.task.judul} â€” ${score}`;
+  const msg = `🎯 Nilai keluar: ${sub.task.judul} — ${score}`;
   await createNotification(sub.studentId, "nilai_keluar", msg, `/tugas?t=${sub.taskId}`);
   const parentLinks = await prisma.parentLink.findMany({ where: { childId: sub.studentId }, select: { parentId: true } });
   for (const p of parentLinks) {

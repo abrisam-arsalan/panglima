@@ -60,7 +60,7 @@ export async function importBulkAction(formData: FormData) {
     : planSiswa(text);
 
   if (problems.length) {
-    redirect(`${redirectUrl}?err=${encodeURIComponent(problems.join(" Â· "))}`);
+    redirect(`${redirectUrl}?err=${encodeURIComponent(problems.join(" · "))}`);
   }
   if (!rows.length) {
     redirect(`${redirectUrl}?err=${encodeURIComponent("Tidak ada baris data yang ditemukan dalam berkas")}`);
@@ -86,7 +86,7 @@ export async function importBulkAction(formData: FormData) {
   });
   for (const k of kelasAktif) classCache.set(k.name.toUpperCase(), k.id);
 
-  // â”€â”€ 1. BULK KELAS â”€â”€
+  // ── 1. BULK KELAS ──
   if (kind === "kelas") {
     for (const r of rows) {
       if (r.status === "ERR") {
@@ -126,7 +126,7 @@ export async function importBulkAction(formData: FormData) {
     }
   }
 
-  // â”€â”€ 2. BULK JADWAL â”€â”€
+  // ── 2. BULK JADWAL ──
   else if (kind === "jadwal") {
     const subjectCache = new Map<string, bigint>();
     const allSubjects = await prisma.subject.findMany({ select: { id: true, name: true, code: true } });
@@ -238,7 +238,7 @@ export async function importBulkAction(formData: FormData) {
     }
   }
 
-  // â”€â”€ 3. BULK SISWA / GURU / ORTU â”€â”€
+  // ── 3. BULK SISWA / GURU / ORTU ──
   else {
     for (const r of rows) {
       if (r.status === "ERR") {
@@ -610,7 +610,7 @@ export async function resetPasswordAction(formData: FormData) {
     }
   }
 
-  // PIN BARU TIDAK dimasukkan ke URL (bocor di riwayat/log) â€” tampil sekali
+  // PIN BARU TIDAK dimasukkan ke URL (bocor di riwayat/log) — tampil sekali
   // via halaman khusus sekali-lihat di bawah (pinShow), kedaluwarsa 5 menit.
   const { issuePinShow } = await import("@/lib/pin-show");
   const token = await issuePinShow(admin.id, userId, newPin);

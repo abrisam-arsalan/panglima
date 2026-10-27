@@ -12,7 +12,7 @@ export default async function AdminUjianPage() {
     where: { role: "SISWA", isActive: true, deletedAt: null },
   });
 
-  // Hanya skor MANUAL (push CBT via /api/v1/tp-skor) â€” skor AUTO/LMS bukan nilai CBT.
+  // Hanya skor MANUAL (push CBT via /api/v1/tp-skor) — skor AUTO/LMS bukan nilai CBT.
   const totalTpScores = await prisma.tpScore.count({
     where: { source: "MANUAL" },
   });
@@ -27,18 +27,18 @@ export default async function AdminUjianPage() {
 
       <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1>Integrasi Sistem Ujian (CBT) ðŸ“‹</h1>
+          <h1>Integrasi Sistem Ujian (CBT) 📋</h1>
           <p>Sinkronisasi data siswa ke engine Ujian dan penerimaan hasil asesmen sumatif.</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <form action={broadcastExamsAction}>
             <button className="btn btn-sm btn-yellow btn-block-mobile" type="submit">
-              ðŸ“¢ Siarkan Notifikasi Ujian
+              📢 Siarkan Notifikasi Ujian
             </button>
           </form>
           <form action={syncStudentsAction}>
             <button className="btn btn-sm btn-primary btn-block-mobile" type="submit">
-              ðŸ‘¥ Sync Siswa ke CBT
+              👥 Sync Siswa ke CBT
             </button>
           </form>
         </div>
@@ -46,13 +46,13 @@ export default async function AdminUjianPage() {
 
       <div className="stat-grid small" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 20 }}>
         <div className="card" style={{ margin: 0 }}>
-          <h3>ðŸŽ“ Siswa Aktif Siap Sync</h3>
+          <h3>🎓 Siswa Aktif Siap Sync</h3>
           <span style={{ fontSize: 28, fontWeight: 900 }}>{totalSiswa}</span>
           <p className="meta" style={{ marginTop: 4 }}>Tersedia di endpoint <code>/api/v1/siswa</code></p>
         </div>
 
         <div className="card" style={{ margin: 0 }}>
-          <h3>ðŸ“¥ Nilai CBT Masuk</h3>
+          <h3>📥 Nilai CBT Masuk</h3>
           <span style={{ fontSize: 28, fontWeight: 900 }}>{totalTpScores}</span>
           <p className="meta" style={{ marginTop: 4 }}>Diterima via push <code>/api/v1/tp-skor</code></p>
         </div>
@@ -89,13 +89,13 @@ export default async function AdminUjianPage() {
 
           <div style={{ marginTop: 20, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <a className="btn btn-primary btn-block-mobile" href={`${cbtBaseUrl}/admin/bank`} target="_blank" rel="noopener noreferrer">
-              ðŸ“š Buka Bank Soal CBT â†—
+              📚 Buka Bank Soal CBT ↗
             </a>
             <a className="btn btn-block-mobile" href={`${cbtBaseUrl}/admin/monitoring`} target="_blank" rel="noopener noreferrer">
-              ðŸ“‹ Buka Monitoring Ujian â†—
+              📋 Buka Monitoring Ujian ↗
             </a>
             <a className="btn btn-yellow btn-block-mobile" href={`${cbtBaseUrl}/admin/login`} target="_blank" rel="noopener noreferrer">
-              ðŸ”‘ Halaman Login Admin CBT â†—
+              🔑 Halaman Login Admin CBT ↗
             </a>
           </div>
         </div>

@@ -56,20 +56,20 @@ export default async function AkunGuruPage({
       </nav>
 
       <div className="page-head">
-        <h1>Data Guru &amp; Pengajar ðŸ‘¨â€ðŸ«</h1>
+        <h1>Data Guru &amp; Pengajar 👨‍🏫</h1>
         <p>Kelola data guru pengajar, akun login portal, dan penugasan mengajar mata pelajaran.</p>
       </div>
 
       <AccountNav activeTab="guru" />
 
-      {msg && <div className="alert alert-success">âœ“ {decodeURIComponent(msg)}</div>}
-      {err && <div className="alert alert-error">âœ• {decodeURIComponent(err)}</div>}
+      {msg && <div className="alert alert-success">✓ {decodeURIComponent(msg)}</div>}
+      {err && <div className="alert alert-error">✕ {decodeURIComponent(err)}</div>}
       {done && (
         <div className="alert alert-info" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <span><b>Hasil Impor Guru:</b></span>
-          <span className="badge badge-green">âœ“ Ditambahkan: {created ?? 0}</span>
-          <span className="badge badge-yellow">â„¹ Sudah Ada: {existing ?? 0}</span>
-          {Number(skipped) > 0 && <span className="badge badge-red">âœ• Gagal: {skipped}</span>}
+          <span className="badge badge-green">✓ Ditambahkan: {created ?? 0}</span>
+          <span className="badge badge-yellow">ℹ Sudah Ada: {existing ?? 0}</span>
+          {Number(skipped) > 0 && <span className="badge badge-red">✕ Gagal: {skipped}</span>}
         </div>
       )}
 
@@ -78,7 +78,7 @@ export default async function AkunGuruPage({
         {/* Bulk Upload Guru */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2>ðŸ“¥ Impor Massal Guru (CSV)</h2>
+            <h2>📥 Impor Massal Guru (CSV)</h2>
             <a href="/api/templates/guru" download className="btn btn-sm btn-yellow" style={{ textDecoration: "none" }}>
               Unduh Template
             </a>
@@ -92,7 +92,7 @@ export default async function AkunGuruPage({
               <input type="hidden" name="redirectUrl" value="/admin/akun/guru" />
               <input className="input" type="file" name="file" accept=".csv,text/csv" required style={{ minHeight: 38 }} />
               <button className="btn btn-primary" type="submit">
-                ðŸ“¤ Unggah &amp; Impor Guru
+                📤 Unggah &amp; Impor Guru
               </button>
             </form>
           </div>
@@ -101,7 +101,7 @@ export default async function AkunGuruPage({
         {/* Tambah Guru Manual */}
         <div className="card" style={{ margin: 0 }}>
           <div className="card-head">
-            <h2>âž• Tambah Guru Manual</h2>
+            <h2>➕ Tambah Guru Manual</h2>
           </div>
           <div className="card-body">
             <form action={addTeacherAction} style={{ display: "grid", gap: 10 }}>
@@ -184,11 +184,11 @@ export default async function AkunGuruPage({
                           ))}
                         </div>
                       ) : (
-                        <span className="muted">â€” belum ada assignment â€”</span>
+                        <span className="muted">— belum ada assignment —</span>
                       )}
                     </td>
                     <td>
-                      <code>{t.pinCipher || "â€”"}</code>
+                      <code>{t.pinCipher || "—"}</code>
                     </td>
                     <td>
                       <span className={`badge ${t.isActive ? "badge-green" : "badge-red"}`}>

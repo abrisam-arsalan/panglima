@@ -18,7 +18,7 @@ export async function openSession(formData: FormData) {
   const dateStr = String(formData.get("date") ?? "").trim();
   if (!scheduleId || !dateStr) redirect("/presensi");
 
-  // Tolak tanggal di masa depan â€” presensi hanya untuk hari berjalan / yang lewat.
+  // Tolak tanggal di masa depan — presensi hanya untuk hari berjalan / yang lewat.
   const todayStr = new Date().toISOString().slice(0, 10);
   if (dateStr > todayStr) throw new Error("Tidak bisa membuka presensi untuk tanggal di masa depan");
 

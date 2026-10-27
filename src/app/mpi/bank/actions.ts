@@ -63,7 +63,7 @@ export async function addSoal(formData: FormData) {
   revalidatePath("/mpi/bank");
 }
 
-/** Hapus butir soal â€” pemilik atau admin. */
+/** Hapus butir soal — pemilik atau admin. */
 export async function deleteSoal(formData: FormData) {
   const user = await staff();
   const id = toBigInt(formData.get("id")) ?? BigInt(0);

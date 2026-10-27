@@ -69,7 +69,7 @@ async function notifyMateri(assignmentId: bigint, judul: string) {
     where: { id: assignmentId },
     include: { subject: true, class: true },
   });
-  if (a) await notifyClass(a.classId, "materi_baru", `ðŸ“– Materi baru: ${judul} (${a.class.name} Â· ${a.subject.name})`, "/materi");
+  if (a) await notifyClass(a.classId, "materi_baru", `📖 Materi baru: ${judul} (${a.class.name} · ${a.subject.name})`, "/materi");
 }
 
 export async function updateMateri(formData: FormData) {

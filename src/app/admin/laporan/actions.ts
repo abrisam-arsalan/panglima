@@ -16,7 +16,7 @@ async function guard() {
   return user;
 }
 
-/** Ubah status laporan: BARU â†’ DIBACA â†’ DITINDAKLANJUTI. */
+/** Ubah status laporan: BARU → DIBACA → DITINDAKLANJUTI. */
 export async function setFeedbackStatus(formData: FormData) {
   const user = await guard();
   const id = toBigInt(formData.get("id")) ?? BigInt(0);

@@ -25,7 +25,7 @@ const clampScore = (raw: FormDataEntryValue | null) => {
   return Math.round(v * 100) / 100;
 };
 
-/* â”€â”€ sel matriks TP â”€â”€ */
+/* ── sel matriks TP ── */
 export async function setTpScore(formData: FormData) {
   const { user, assignmentId } = await guard(formData.get("assignmentId"));
   const tpId = toBigInt(formData.get("tpId")) ?? BigInt(0);
@@ -50,7 +50,7 @@ export async function setTpScore(formData: FormData) {
   back();
 }
 
-/* â”€â”€ flag validasi TR / OP â”€â”€ */
+/* ── flag validasi TR / OP ── */
 export async function toggleFlag(formData: FormData) {
   const { assignmentId } = await guard(formData.get("assignmentId"));
   const tpId = toBigInt(formData.get("tpId")) ?? BigInt(0);
@@ -65,7 +65,7 @@ export async function toggleFlag(formData: FormData) {
   redirect(`/nilai?a=${assignmentId}`);
 }
 
-/* â”€â”€ rekap otomatis â”€â”€ */
+/* ── rekap otomatis ── */
 export async function recalculate(formData: FormData) {
   const { user, assignmentId } = await guard(formData.get("assignmentId"));
   const force = formData.get("force") === "1";
@@ -76,7 +76,7 @@ export async function recalculate(formData: FormData) {
   redirect(`/nilai?a=${assignmentId}&ok=rekap&n=${nTp}`);
 }
 
-/* â”€â”€ koreksi rapor manual â”€â”€ */
+/* ── koreksi rapor manual ── */
 export async function setReportScore(formData: FormData) {
   const { user, assignmentId } = await guard(formData.get("assignmentId"));
   const studentId = toBigInt(formData.get("studentId")) ?? BigInt(0);
@@ -98,7 +98,7 @@ export async function setReportScore(formData: FormData) {
   redirect(`/nilai?a=${assignmentId}`);
 }
 
-/* â”€â”€ asesmen manual (UH / praktik / nilai CBT) â”€â”€ */
+/* ── asesmen manual (UH / praktik / nilai CBT) ── */
 export async function addAssessment(formData: FormData) {
   const { assignmentId } = await guard(formData.get("assignmentId"));
   const nama = String(formData.get("nama") ?? "").trim();
@@ -134,7 +134,7 @@ export async function setAssessmentScore(formData: FormData) {
     await prisma.grade.create({
       data: { target: "MANUAL", manualAssessmentId: id, studentId, score: score!, gradedById: user.id },
     });
-  await syncAutoTpScores(assignmentId); // asesmen yg menaut TP â†’ ikut agregasi
+  await syncAutoTpScores(assignmentId); // asesmen yg menaut TP → ikut agregasi
   await recomputeReports(assignmentId);
   await logAudit({
     userId: user.id, action: "ASPEK_SKOR", entity: "grades", entityId: `${id}:${studentId}`,

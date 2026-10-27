@@ -14,14 +14,14 @@ async function guard() {
 /**
  * Setup awal portal (sekali setelah migrate + reset-admin):
  * buat tahun ajaran + semester Ganjil/Genap dan tandai aktif.
- * Idempoten â€” aman diulang (upsert per nama/nomor).
+ * Idempoten — aman diulang (upsert per nama/nomor).
  */
 export async function setupTahunAjaran(formData: FormData) {
   const admin = await guard();
   const name = String(formData.get("name") ?? "").trim() || "2026/2027";
   const semesterNumber = Number(String(formData.get("semesterNumber") ?? "1")) === 2 ? 2 : 1;
 
-  // Tahun ajaran Indonesia: Juliâ€“Juni. Ambil tahun awal dari nama "2026/2027".
+  // Tahun ajaran Indonesia: Juli–Juni. Ambil tahun awal dari nama "2026/2027".
   const startYear = Number(name.slice(0, 4)) || new Date().getFullYear();
   const year = await prisma.academicYear.upsert({
     where: { name },
@@ -55,5 +55,5 @@ export async function setupTahunAjaran(formData: FormData) {
   revalidatePath("/admin/setup");
   revalidatePath("/admin/penugasan");
   revalidatePath("/dashboard");
-  redirect(`/admin/setup?msg=${encodeURIComponent(`Tahun ${name} semester ${semesterNumber === 1 ? "Ganjil" : "Genap"} aktif. Lanjut impor kelas â†’ guru â†’ siswa â†’ jadwal.`)}`);
+  redirect(`/admin/setup?msg=${encodeURIComponent(`Tahun ${name} semester ${semesterNumber === 1 ? "Ganjil" : "Genap"} aktif. Lanjut impor kelas → guru → siswa → jadwal.`)}`);
 }
