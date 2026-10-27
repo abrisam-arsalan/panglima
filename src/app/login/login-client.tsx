@@ -39,23 +39,22 @@ export default function LoginPage() {
         <img className="auth-logo" src="/assets/logo.png" alt="Logo SMPN 5 Tegal" />
         <h1>Portal Panglima</h1>
         <p className="auth-sub">
-          LMS, Presensi, dan MPI SMP Negeri 5 Tegal.<br />
-          Masuk dengan <strong>NISN</strong> (siswa), <strong>P+NISN</strong> (orang tua), <strong>NIP/Username</strong> (guru/admin).
+          SMP Negeri 5 Tegal — satu login untuk semua.
         </p>
         <div className="field">
-          <label className="field-label" htmlFor="username">Username / NISN</label>
+          <label className="field-label" htmlFor="username">NISN / NIP / Username</label>
           <input
             id="username"
             className="input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
-            placeholder="mis. 0012345678 / admin"
+            placeholder="NISN, NIP, atau username…"
             required
           />
         </div>
         <div className="field">
-          <label className="field-label" htmlFor="password">Password</label>
+          <label className="field-label" htmlFor="password">PIN / Password</label>
           <input
             id="password"
             className="input"
@@ -70,7 +69,7 @@ export default function LoginPage() {
           {busy ? "Memproses…" : "Masuk"}
         </button>
         {error && <p className="error">{error}</p>}
-        <p className="auth-hint">Lupa password? Hubungi admin / TU sekolah.</p>
+        <p className="auth-hint">Lupa PIN? Hubungi wali kelas atau TU.</p>
       </form>
     </div>
   );
