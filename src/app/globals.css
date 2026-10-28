@@ -523,6 +523,82 @@ html, body {
     gap: 8px;
   }
 }
+/* Presensi ringkas: 1 baris per siswa — Nama + H S I A berikon.
+   Baris tetap setinggi jari (min 52px); tombol status 44px. */
+.att-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--ink);
+  min-height: 52px;
+}
+.att-row:last-child { border-bottom: 0; }
+.att-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.att-name .no {
+  font-weight: 900;
+  margin-right: 6px;
+  opacity: .55;
+}
+.att-pick {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(40px, 1fr));
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.att-opt {
+  position: relative;
+  cursor: pointer;
+  min-width: 40px;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 var(--ink);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.att-opt .k {
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+.att-opt .ic { font-size: 13px; line-height: 1; }
+.att-opt:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+.att-opt:has(input:checked) {
+  background: var(--yellow);
+  border-width: 3px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.att-opt[data-st="SAKIT"]:has(input:checked),
+.att-opt[data-st="IZIN"]:has(input:checked) { background: var(--sky); }
+.att-opt[data-st="ALPHA"]:has(input:checked) { background: var(--pink); }
+.att-ket-toggle {
+  flex: 0 0 auto;
+  min-width: 40px;
+  min-height: 44px;
+  border: 2px dashed var(--ink);
+  border-radius: var(--radius);
+  background: transparent;
+  font-size: 15px;
+  cursor: pointer;
+}
+.att-ket-toggle.has-text { border-style: solid; background: var(--sky); }
+.att-ket-row { padding: 0 10px 8px 34px; border-bottom: 2px solid var(--ink); }
+.att-ket-row:last-child { border-bottom: 0; }
 .status-pill {
   cursor: pointer;
   font-size: 13px;

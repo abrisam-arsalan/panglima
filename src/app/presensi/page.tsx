@@ -7,7 +7,8 @@ import { GlyphPresensi } from "@/components/glyph";
 import { DAYS } from "@/lib/notify";
 import { openSession, saveAttendance } from "./actions";
 import MarkAll from "./mark-all";
-import { AttendanceStatus } from "@prisma/client";
+import AttendanceRow from "./attendance-row";
+import StickySaveBar from "./sticky-save-bar";
 
 export default async function PresensiPage({
   searchParams,
@@ -54,7 +55,11 @@ export default async function PresensiPage({
     });
 
     return (
-      <AppShell user={user} active="/presensi">
+      <AppShell
+        user={user}
+        active="/presensi"
+        midAction={{ formId: "form-presensi", label: "Simpan", icon: "💾" }}
+      >
         <div className="page-head">
           <h1>Presensi Kelas: {session.schedule.assignment.class.name}</h1>
           <p>
@@ -75,62 +80,19 @@ export default async function PresensiPage({
               <span className="muted">Default: HADIR. Klik opsi untuk siswa yang berhalangan.</span>
             </div>
             <MarkAll formId="form-presensi" />
-            <div className="card-body">
+            <div className="card-body" style={{ padding: 0 }}>
               {session.records.length === 0 && (
-                <div className="empty">Belum ada siswa terdaftar di kelas ini.</div>
+                <div className="empty" style={{ padding: 16 }}>Belum ada siswa terdaftar di kelas ini.</div>
               )}
               {session.records.map((r, i) => (
-                <div
-                  className="list-row"
+                <AttendanceRow
                   key={String(r.id)}
-                  style={{
-                    display: "flex",
-                    alignItems: "stretch",
-                    justifyContent: "space-between",
-                    flexDirection: "column",
-                    gap: 10,
-                    padding: "12px",
-                    borderBottom: "2px solid var(--border)",
-                  }}
-                >
-                  <div style={{ width: "100%" }}>
-                    <span style={{ fontWeight: 900, marginRight: 8, fontSize: 16 }}>{i + 1}.</span>
-                    <b style={{ fontSize: 15 }}>{r.student.nama}</b>
-                    <div className="meta" style={{ marginTop: 2 }}>NISN: {r.student.nisn ?? "—"}</div>
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-                    <div className="attendance-options">
-                      {(["HADIR", "SAKIT", "IZIN", "ALPHA"] as AttendanceStatus[]).map((st) => (
-                        <label
-                          key={st}
-                          className="status-pill"
-                        >
-                          <input
-                            type="radio"
-                            name={`status_${r.studentId}`}
-                            value={st}
-                            defaultChecked={r.status === st}
-                            style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
-                          />
-                          {st === "HADIR" && "✅ Hadir"}
-                          {st === "SAKIT" && "🤒 Sakit"}
-                          {st === "IZIN" && "📄 Izin"}
-                          {st === "ALPHA" && "❌ Alpa"}
-                        </label>
-                      ))}
-                    </div>
-
-                    <input
-                      className="input"
-                      style={{ width: "100%", fontSize: 13, minHeight: 44 }}
-                      type="text"
-                      name={`ket_${r.studentId}`}
-                      defaultValue={r.keterangan}
-                      placeholder="Alasan izin/sakit (opsional)…"
-                    />
-                  </div>
-                </div>
+                  no={i + 1}
+                  nama={r.student.nama}
+                  studentId={String(r.studentId)}
+                  defaultStatus={r.status}
+                  defaultKet={r.keterangan}
+                />
               ))}
             </div>
           </div>
@@ -167,13 +129,8 @@ export default async function PresensiPage({
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
-            <button className="btn btn-green btn-block-mobile" type="submit" name="finish" value="1" style={{ minHeight: 48, fontSize: 15, flex: "1 1 auto" }}>
-              ✅ Simpan & Tandai Selesai
-            </button>
-            <button className="btn btn-primary btn-block-mobile" type="submit" name="finish" value="0" style={{ minHeight: 48, fontSize: 15, flex: "1 1 auto" }}>
-              💾 Simpan Draf
-            </button>
+          <StickySaveBar aboveNav={user.role !== "ADMIN"} />
+          <div style={{ display: "flex", gap: 10, marginTop: 18, marginBottom: 150, flexWrap: "wrap" }}>
             <a className="btn btn-ghost btn-block-mobile" href="/presensi" style={{ minHeight: 48, fontSize: 15, flex: "1 1 auto", textAlign: "center" }}>
               ← Kembali
             </a>

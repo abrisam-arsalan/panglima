@@ -8,7 +8,15 @@ import type { NavItem } from "@/lib/nav";
  * "Lainnya" (sisa menu di bottom-sheet). Maks 5 slot agar jempol akurat.
  * Item tengah = nav[2] (Presensi guru / Tugas siswa).
  */
-export default function BottomNav({ nav, active }: { nav: NavItem[]; active: string }) {
+export default function BottomNav({
+  nav,
+  active,
+  midAction,
+}: {
+  nav: NavItem[];
+  active: string;
+  midAction?: { formId: string; label: string; icon: string };
+}) {
   const [open, setOpen] = useState(false);
   const main = nav.slice(0, 4);
   const mid = nav[2];
@@ -16,23 +24,54 @@ export default function BottomNav({ nav, active }: { nav: NavItem[]; active: str
   const rest = nav.slice(4);
   const restActive = rest.some((n) => n.href === active);
 
+  const submitMidForm = () => {
+    if (!midAction) return;
+    const form = document.getElementById(midAction.formId) as HTMLFormElement | null;
+    if (!form) return;
+    // Server action draf (finish=0): sisipkan penanda agar terkirim.
+    let marker = form.querySelector('input[name="finish"]') as HTMLInputElement | null;
+    if (!marker) {
+      marker = document.createElement("input");
+      marker.type = "hidden";
+      marker.name = "finish";
+      form.appendChild(marker);
+    }
+    marker.value = "0";
+    form.requestSubmit();
+  };
+
   return (
     <>
       <nav className="bottomnav bottomnav-5" aria-label="Navigasi utama">
         <BottomLink n={side[0]} active={active} />
         <BottomLink n={side[1]} active={active} />
-        {mid && (
-          <a
-            key={mid.href}
-            href={mid.href}
-            className={`bn-item bn-mid ${active === mid.href ? "active" : ""}`}
-            aria-label={mid.label}
+        {midAction ? (
+          <button
+            key="mid-action"
+            type="button"
+            className="bn-item bn-mid active"
+            onClick={submitMidForm}
+            aria-label={midAction.label}
           >
             <span className="bn-mid-btn">
-              <span className="ico">{mid.icon}</span>
+              <span className="ico">{midAction.icon}</span>
             </span>
-            <span>{mid.label}</span>
-          </a>
+            <span>{midAction.label}</span>
+          </button>
+        ) : (
+          mid && (
+            <a
+              key={mid.href}
+              href={mid.href}
+              className={`bn-item bn-mid ${active === mid.href ? "active" : ""}`}
+              aria-label={mid.label}
+            >
+              <span className="bn-mid-btn">
+                <span className="ico">{mid.icon}</span>
+              </span>
+              <span>{mid.label}</span>
+            </a>
+          )
         )}
         <BottomLink n={side[2]} active={active} />
         <button
