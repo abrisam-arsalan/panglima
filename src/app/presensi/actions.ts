@@ -85,6 +85,38 @@ export async function openSession(formData: FormData) {
   redirect(`/presensi?session=${session.id}`);
 }
 
+/**
+ * Admin membuka kembali sesi SELESAI → DIBUKA agar bisa dikoreksi.
+ * Satu-satunya jalan mengubah sesi terkunci (guru tidak punya akses ini).
+ */
+export async function reopenSession(formData: FormData) {
+  const user = await getSessionUser();
+  assertPinClear(user);
+  if (!user || user.role !== "ADMIN") {
+    redirect("/login");
+  }
+
+  const sessionId = toBigInt(formData.get("sessionId")) ?? BigInt(0);
+  const session = await prisma.classSession.findUnique({ where: { id: sessionId } });
+  if (!session) redirect("/presensi?err=" + encodeURIComponent("Sesi tidak ditemukan"));
+
+  await prisma.classSession.update({
+    where: { id: sessionId },
+    data: { status: ClassSessionStatus.DIBUKA },
+  });
+
+  await logAudit({
+    userId: user.id,
+    action: "PRESENSI_BUKA_KEMBALI",
+    entity: "class_sessions",
+    entityId: String(sessionId),
+  });
+
+  revalidatePath("/presensi");
+  revalidatePath("/rekap-presensi");
+  redirect(`/presensi?session=${sessionId}&ok=1`);
+}
+
 export async function saveAttendance(formData: FormData) {
   const user = await getSessionUser();
   assertPinClear(user);
@@ -97,15 +129,16 @@ export async function saveAttendance(formData: FormData) {
     where: { id: sessionId },
     include: { schedule: { include: { assignment: true } } },
   });
-  if (!session) throw new Error("Sesi tidak ditemukan");
+  if (!session) redirect("/presensi?err=" + encodeURIComponent("Sesi tidak ditemukan"));
 
   // Sesi SELESAI = riwayat terkunci. Koreksi hanya via admin (buka kembali dulu).
+  // Redirect ramah (bukan throw) agar tidak jadi 500 di browser guru.
   if (session.status === ClassSessionStatus.SELESAI && user.role !== "ADMIN") {
-    throw new Error("Sesi sudah selesai dan terkunci. Hubungi admin untuk koreksi.");
+    redirect("/presensi?session=" + String(sessionId) + "&err=" + encodeURIComponent("Sesi sudah dikunci. Hubungi admin untuk koreksi."));
   }
 
   if (user.role === "GURU" && session.schedule.assignment.teacherId !== user.id) {
-    throw new Error("Akses ditolak");
+    redirect("/presensi?err=" + encodeURIComponent("Akses ditolak"));
   }
 
   const materi = String(formData.get("materi") ?? "").trim();
