@@ -33,6 +33,10 @@
 
   --topbar-h: calc(64px + env(safe-area-inset-top, 0px));
   --bottomnav-h: 64px;
+
+  /* Lebar minimum konten agar bisa digeser horizontal di dalam kartu:
+     matriks jadwal 20 kolom (±1520px), matriks nilai 40px × N kolom. */
+  --matrix-min: 1200px;
 }
 * { box-sizing: border-box; margin: 0; }
 html { -webkit-text-size-adjust: 100%; }
@@ -88,8 +92,8 @@ small { color: var(--muted); }
 /* ---------- Layout ---------- */
 .layout { max-width: 1120px; margin: 0 auto; }
 .content { padding: 20px 16px calc(var(--bottomnav-h) + 30px); }
-.layout-admin { display: grid; grid-template-columns: 240px 1fr; max-width: 100%; }
-.layout-admin .content { padding-bottom: 44px; }
+.layout-admin { display: grid; grid-template-columns: 240px minmax(0, 1fr); max-width: 100%; min-width: 0; }
+.layout-admin .content { padding-bottom: 44px; min-width: 0; overflow-x: clip; }
 .sidebar {
   background: var(--card); border-right: 3px solid var(--ink);
   min-height: calc(100vh - var(--topbar-h)); padding: 14px 10px;
@@ -238,7 +242,21 @@ select.input { appearance: auto; }
 .error { color: var(--red); font-size: 13.5px; font-weight: 900; margin-top: 8px; text-transform: uppercase; }
 
 /* ---------- Table (High Contrast, Bold Header, Striped Hover) ---------- */
-.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: var(--line); box-shadow: var(--shadow-sm); background: var(--card); }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: var(--line); box-shadow: var(--shadow-sm); background: var(--card); max-width: 100%; scrollbar-gutter: stable; }
+.table-wrap > .table-matrix { min-width: var(--matrix-min); }
+/* Form impor CSV: berdampingan di layar lebar, bertumpuk penuh di HP. */
+.import-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+@media (max-width: 639px) {
+  .import-form { grid-template-columns: minmax(0, 1fr); }
+}
+/* Matriks lebar (jadwal/nilai): kolom Jam+Waktu lengket kiri agar konteks
+   baris tetap terlihat saat geser horizontal. Bayangan menandai area beku. */
+.table-matrix th.sticky-col, .table-matrix td.sticky-col {
+  position: sticky; left: 0; z-index: 2; background: var(--card);
+}
+.table-matrix thead th.sticky-col { background: var(--ink); color: #fff; z-index: 3; }
+.table-matrix td.sticky-col { box-shadow: 2px 0 0 var(--ink); }
+.table-matrix thead th.sticky-col { box-shadow: 2px 0 0 rgba(255,255,255,.35); }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table th, .table td { text-align: left; padding: 12px 14px; border-bottom: 2px solid var(--ink); }
 .table th { font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 900; background: var(--ink); color: #fff; }

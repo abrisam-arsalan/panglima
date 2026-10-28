@@ -490,7 +490,7 @@ export default async function JadwalPage({
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <a href="/api/templates/jadwal" download className="btn btn-sm btn-yellow" style={{ textDecoration: "none" }}>
+          <a href="/api/templates/jadwal" download className="btn btn-sm btn-yellow btn-block-mobile" style={{ textDecoration: "none" }}>
             📋 Unduh Template CSV
           </a>
         </div>
@@ -507,36 +507,44 @@ export default async function JadwalPage({
         </div>
       )}
 
-      {/* QUICK STATS BANNER */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 20 }}>
-        <div className="card" style={{ margin: 0, padding: 14 }}>
-          <div className="muted" style={{ fontSize: 12 }}>TOTAL ROMBEL</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: "var(--brand-primary, #1e3a8a)" }}>{allClasses.length} Kelas</div>
-          <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Kelas VII, VIII, dan IX (A–F)</div>
+      {/* QUICK STATS BANNER — 2 kolom di layar sempit agar tidak meluber */}
+      <div className="stat-grid" style={{ marginBottom: 20 }}>
+        <div className="stat">
+          <div>
+            <div className="stat-label">TOTAL ROMBEL</div>
+            <div className="stat-value">{allClasses.length} Kelas</div>
+            <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Kelas VII, VIII, dan IX (A–F)</div>
+          </div>
         </div>
-        <div className="card" style={{ margin: 0, padding: 14 }}>
-          <div className="muted" style={{ fontSize: 12 }}>TOTAL GURU</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: "var(--brand-primary, #1e3a8a)" }}>{allTeachers.length} Guru</div>
-          <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Kode Guru 1 s/d 32</div>
+        <div className="stat">
+          <div>
+            <div className="stat-label">TOTAL GURU</div>
+            <div className="stat-value">{allTeachers.length} Guru</div>
+            <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Kode Guru 1 s/d 32</div>
+          </div>
         </div>
-        <div className="card" style={{ margin: 0, padding: 14 }}>
-          <div className="muted" style={{ fontSize: 12 }}>HARI INI</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: "var(--brand-primary, #1e3a8a)" }}>{DAYS[today]}</div>
-          <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Jadwal aktif semester I</div>
+        <div className="stat">
+          <div>
+            <div className="stat-label">HARI INI</div>
+            <div className="stat-value">{DAYS[today]}</div>
+            <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Jadwal aktif semester I</div>
+          </div>
         </div>
-        <div className="card" style={{ margin: 0, padding: 14 }}>
-          <div className="muted" style={{ fontSize: 12 }}>TOTAL SLOT JAM</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: "var(--brand-primary, #1e3a8a)" }}>756 Jam</div>
-          <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Tatap muka mingguan</div>
+        <div className="stat">
+          <div>
+            <div className="stat-label">TOTAL SLOT JAM</div>
+            <div className="stat-value">756 Jam</div>
+            <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Tatap muka mingguan</div>
+          </div>
         </div>
       </div>
 
       {/* CARD IMPOR MASSAL JADWAL */}
       {user.role === "ADMIN" && (
         <details className="card" style={{ marginBottom: 20, cursor: "pointer" }}>
-          <summary style={{ padding: "12px 16px", fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <summary style={{ padding: "12px 16px", fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <span>📥 Form Impor Massal Jadwal Pelajaran (CSV)</span>
-            <span className="pill">Klik untuk Buka/Tutup</span>
+            <span className="pill" style={{ flexShrink: 0 }}>Buka/Tutup</span>
           </summary>
           <div className="card-body" style={{ borderTop: "1px solid var(--border, #e2e8f0)", paddingTop: 14 }}>
             <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
@@ -544,11 +552,11 @@ export default async function JadwalPage({
               <br />
               Contoh: <code>Senin,07:40,08:15,7A,PJOK,guru09,Ruang 7A</code>
             </p>
-            <form action={importBulkAction} encType="multipart/form-data" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
+            <form action={importBulkAction} encType="multipart/form-data" className="import-form">
               <input type="hidden" name="kind" value="jadwal" />
               <input type="hidden" name="redirectUrl" value="/jadwal" />
-              <input className="input" type="file" name="file" accept=".csv,text/csv" required style={{ minHeight: 38 }} />
-              <button className="btn btn-primary" type="submit" style={{ minHeight: 38, whiteSpace: "nowrap" }}>
+              <input className="input" type="file" name="file" accept=".csv,text/csv" required style={{ minHeight: 38, minWidth: 0 }} />
+              <button className="btn btn-primary btn-block-mobile" type="submit" style={{ minHeight: 38, whiteSpace: "nowrap" }}>
                 📤 Unggah &amp; Impor Jadwal
               </button>
             </form>
@@ -606,12 +614,12 @@ export default async function JadwalPage({
             </div>
           </div>
 
-          <div className="table-wrap" style={{ overflowX: "auto" }}>
-            <table className="table" style={{ fontSize: 12, minWidth: 1200 }}>
+          <div className="table-wrap">
+            <table className="table table-matrix" style={{ fontSize: 12 }}>
               <thead>
                 <tr>
-                  <th style={{ width: 60, textAlign: "center", verticalAlign: "middle" }} rowSpan={2}>Jam</th>
-                  <th style={{ width: 110, verticalAlign: "middle" }} rowSpan={2}>Waktu</th>
+                  <th className="sticky-col" style={{ width: 52, textAlign: "center", verticalAlign: "middle" }} rowSpan={2}>Jam</th>
+                  <th className="sticky-col" style={{ width: 104, verticalAlign: "middle" }} rowSpan={2}>Waktu</th>
                   <th colSpan={6} style={{ textAlign: "center", background: "#e0e7ff", color: "#1e3a8a", borderRight: "2px solid #cbd5e1" }}>
                     KELAS VII
                   </th>
@@ -643,8 +651,8 @@ export default async function JadwalPage({
                   if (slot.type === "break") {
                     return (
                       <tr key={`break-${sIdx}`} style={{ background: "#f8fafc" }}>
-                        <td style={{ textAlign: "center", color: "#94a3b8" }}>—</td>
-                        <td style={{ fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}>{slot.time}</td>
+                        <td className="sticky-col" style={{ textAlign: "center", color: "#94a3b8" }}>—</td>
+                        <td className="sticky-col" style={{ fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}>{slot.time}</td>
                         <td colSpan={18} style={{ textAlign: "center", fontWeight: 700, letterSpacing: 0.8, color: "#475569", padding: "8px 12px" }}>
                           ☕ {slot.label}
                         </td>
@@ -654,12 +662,12 @@ export default async function JadwalPage({
 
                   return (
                     <tr key={`lesson-${sIdx}`}>
-                      <td style={{ textAlign: "center" }}>
+                      <td className="sticky-col" style={{ textAlign: "center" }}>
                         <span className="badge badge-yellow" style={{ fontSize: 11, fontWeight: 700 }}>
                           {slot.jamKe}
                         </span>
                       </td>
-                      <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{slot.time}</td>
+                      <td className="sticky-col" style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{slot.time}</td>
                       {ORDERED_CLASSES.map((cName, cIdx) => {
                         const cellData = matrixMap.get(`${slot.start}-${cName}`);
                         return (
