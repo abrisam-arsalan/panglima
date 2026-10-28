@@ -26,7 +26,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/admin/import": {
+    "/admin/master": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -39,8 +39,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/admin/import",
-      "dataRoute": "/admin/import.rsc",
+      "srcRoute": "/admin/master",
+      "dataRoute": "/admin/master.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -74,7 +74,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/admin/master": {
+    "/admin/import": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -87,8 +87,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/admin/master",
-      "dataRoute": "/admin/master.rsc",
+      "srcRoute": "/admin/import",
+      "dataRoute": "/admin/import.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
