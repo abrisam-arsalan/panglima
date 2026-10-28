@@ -254,7 +254,22 @@ export default async function RekapPresensiPage({
       </div>
 
       <div className="card" style={{ marginBottom: 20 }}>
-        <div className="card-head"><h2>🔍 Filter Rekap Presensi</h2></div>
+        <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+          <h2>🔍 Filter Rekap Presensi</h2>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {(["minggu", "bulan", "semester"] as const).map((p) => (
+              <a
+                key={p}
+                className="btn btn-sm btn-green btn-block-mobile"
+                href={`/api/export/presensi?periode=${p}${selectedClassId ? `&classId=${selectedClassId}` : ""}`}
+                style={{ textDecoration: "none" }}
+                title={`Unduh rekap ${p} (XLSX, 1 sheet per rombel)`}
+              >
+                📥 {p === "minggu" ? "Mingguan" : p === "bulan" ? "Bulanan" : "1 Semester"}
+              </a>
+            ))}
+          </div>
+        </div>
         <div className="card-body">
           <form method="get" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
             <div style={{ flex: "1 1 180px" }}>
