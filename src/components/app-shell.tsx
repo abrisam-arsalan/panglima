@@ -46,13 +46,13 @@ export default async function AppShell({
               🔔{unread > 0 && <span className="bell-dot">{unread > 99 ? "99+" : unread}</span>}
             </a>
           )}
-          <span className="userchip">
+          <a className="userchip" href="/profil" title="Profil saya — ubah nama & password" style={{ textDecoration: "none", color: "inherit" }}>
             <span className="avatar">{initials(user.nama)}</span>
             <span className="user-meta">
               <b>{user.nama.split(",")[0]}</b>
               <small>{ROLE_LABEL[user.role] ?? user.role}</small>
             </span>
-          </span>
+          </a>
           <LogoutButton />
         </div>
       </header>
