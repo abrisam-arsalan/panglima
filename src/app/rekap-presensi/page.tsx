@@ -226,7 +226,10 @@ export default async function RekapPresensiPage({
       schedule: {
         include: { assignment: { include: { class: true, subject: true, teacher: true } } },
       },
-      records: true,
+      records: {
+        include: { student: { select: { nama: true } } },
+        orderBy: [{ status: "asc" }, { student: { nama: "asc" } }],
+      },
     },
     orderBy: { schedule: { startTime: "asc" } },
   });
@@ -316,7 +319,10 @@ export default async function RekapPresensiPage({
           {sessions.length === 0 && <div className="empty">Tidak ada sesi mengajar tercatat pada tanggal dan kelas ini.</div>}
           {sessions.map((s) => {
             const h = s.records.filter((r) => r.status === "HADIR").length;
-            const skl = s.records.filter((r) => r.status !== "HADIR");
+            const tidakHadir = s.records.filter((r) => r.status !== "HADIR");
+            const izin = tidakHadir.filter((r) => r.status === "IZIN");
+            const sakit = tidakHadir.filter((r) => r.status === "SAKIT");
+            const alpha = tidakHadir.filter((r) => r.status === "ALPHA");
             return (
               <div
                 key={String(s.id)}
@@ -346,9 +352,26 @@ export default async function RekapPresensiPage({
                   <div style={{ fontWeight: 800 }}>
                     Kehadiran: <span className="badge badge-green">{h} / {s.records.length} Siswa</span>
                   </div>
-                  {skl.length > 0 && (
-                    <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                      Tidak hadir: {skl.map((r) => `${r.status}`).join(", ")}
+                  {tidakHadir.length > 0 && (
+                    <div style={{ fontSize: 12, textAlign: "right", maxWidth: "100%" }}>
+                      {([
+                        ["Izin", izin, "badge-yellow"],
+                        ["Sakit", sakit, "badge-yellow"],
+                        ["Alpha", alpha, "badge-red"],
+                      ] as const).map(([label, rows]) =>
+                        rows.length > 0 && (
+                          <div key={label} style={{ marginTop: 4 }}>
+                            <span className="muted">{label} ({rows.length}): </span>
+                            {rows.map((r, i) => (
+                              <span key={String(r.id)}>
+                                {i > 0 && ", "}
+                                <b>{r.student.nama}</b>
+                                {r.keterangan ? <span className="muted"> ({r.keterangan})</span> : null}
+                              </span>
+                            ))}
+                          </div>
+                        )
+                      )}
                     </div>
                   )}
                   {user.role === "GURU" && s.schedule.assignment.teacherId === user.id && (
