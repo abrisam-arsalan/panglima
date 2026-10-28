@@ -110,6 +110,10 @@ small { color: var(--muted); }
 .side-item:hover { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--ink); }
 .side-item .ico { width: 22px; text-align: center; font-size: 16px; }
 .side-item.active { background: var(--yellow); }
+/* Submenu lipat (<details>): sembunyikan marker bawaan, panah ▾ custom. */
+details.side-group > summary.side-item::-webkit-details-marker { display: none; }
+details.side-group > summary.side-item::marker { content: ""; }
+details.side-group:not([open]) { gap: 0; }
 .page-head { margin-bottom: 18px; }
 .page-head h1 { font-size: 23px; }
 .page-head p { color: var(--muted); font-weight: 600; }

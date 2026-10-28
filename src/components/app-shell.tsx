@@ -63,16 +63,19 @@ export default async function AppShell({
             <nav className="side-nav">
               {nav.map((n) => {
                 const isItemActive = active === n.href || (n.children && n.children.some((c) => active === c.href));
-                return (
-                  <div key={n.href} className="side-group" style={{ display: "flex", flexDirection: "column" }}>
-                    <a
-                      className={`side-item ${isItemActive && !n.children ? "active" : ""}`}
-                      href={n.children ? n.children[0].href : n.href}
-                    >
-                      <span className="ico">{n.icon}</span>
-                      <span>{n.label}</span>
-                    </a>
-                    {n.children && (
+                // Menu beranak (mis. Akun): lipat-otomatis — terbuka hanya bila
+                // halaman aktif ada di dalamnya. Tanpa JS, pakai <details>.
+                if (n.children) {
+                  return (
+                    <details key={n.href} className="side-group" open={isItemActive || undefined} style={{ display: "flex", flexDirection: "column" }}>
+                      <summary
+                        className={`side-item ${isItemActive ? "active" : ""}`}
+                        style={{ cursor: "pointer", listStyle: "none" }}
+                      >
+                        <span className="ico">{n.icon}</span>
+                        <span style={{ flex: 1 }}>{n.label}</span>
+                        <span aria-hidden="true" style={{ fontSize: 11 }}>▾</span>
+                      </summary>
                       <div className="side-sub-nav" style={{ display: "flex", flexDirection: "column", gap: 3, paddingLeft: 14, margin: "4px 0 8px" }}>
                         {n.children.map((sub) => (
                           <a
@@ -99,7 +102,18 @@ export default async function AppShell({
                           </a>
                         ))}
                       </div>
-                    )}
+                    </details>
+                  );
+                }
+                return (
+                  <div key={n.href} className="side-group" style={{ display: "flex", flexDirection: "column" }}>
+                    <a
+                      className={`side-item ${isItemActive ? "active" : ""}`}
+                      href={n.href}
+                    >
+                      <span className="ico">{n.icon}</span>
+                      <span>{n.label}</span>
+                    </a>
                   </div>
                 );
               })}
