@@ -426,7 +426,9 @@ html, body {
   cursor: pointer;
   font-family: inherit;
 }
-/* Tombol tengah: lingkaran kuning menonjol (zona jempol) */
+/* Tombol tengah: rata seperti slot lain (flat) — tanpa lingkaran menonjol
+   agar tidak membingungkan. Status aktif tetap kuning seperti lainnya.
+   Kelas lama .bn-mid dipertahankan untuk kompatibilitas. */
 .bn-mid .bn-mid-btn {
   width: 52px;
   height: 52px;
@@ -444,6 +446,7 @@ html, body {
 .bn-mid.active .bn-mid-btn {
   background: var(--teal);
 }
+.bn-mid-flat .ico { font-size: 21px; line-height: 1; }
 /* Bottom-sheet "Lainnya" */
 .bn-sheet-backdrop {
   position: fixed;

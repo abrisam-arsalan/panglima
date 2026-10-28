@@ -8,7 +8,7 @@ import { DAYS } from "@/lib/notify";
 import { openSession, saveAttendance } from "./actions";
 import MarkAll from "./mark-all";
 import AttendanceRow from "./attendance-row";
-import StickySaveBar from "./sticky-save-bar";
+import SaveButtons from "./save-buttons";
 
 export default async function PresensiPage({
   searchParams,
@@ -55,11 +55,7 @@ export default async function PresensiPage({
     });
 
     return (
-      <AppShell
-        user={user}
-        active="/presensi"
-        midAction={{ formId: "form-presensi", label: "Simpan", icon: "💾" }}
-      >
+      <AppShell user={user} active="/presensi">
         <div className="page-head">
           <h1>Presensi Kelas: {session.schedule.assignment.class.name}</h1>
           <p>
@@ -129,9 +125,9 @@ export default async function PresensiPage({
             </div>
           </div>
 
-          <StickySaveBar aboveNav={user.role !== "ADMIN"} />
-          <div style={{ display: "flex", gap: 10, marginTop: 18, marginBottom: 150, flexWrap: "wrap" }}>
-            <a className="btn btn-ghost btn-block-mobile" href="/presensi" style={{ minHeight: 48, fontSize: 15, flex: "1 1 auto", textAlign: "center" }}>
+          <SaveButtons />
+          <div style={{ marginTop: 10 }}>
+            <a className="btn btn-ghost btn-block-mobile" href="/presensi" style={{ minHeight: 44, fontSize: 14, width: "100%", textAlign: "center" }}>
               ← Kembali
             </a>
           </div>

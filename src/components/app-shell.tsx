@@ -20,13 +20,10 @@ export default async function AppShell({
   user,
   active,
   children,
-  midAction,
 }: {
   user: User;
   active: string;
   children: React.ReactNode;
-  /** Aksi tombol tengah bottomnav (mis. simpan presensi): { formId, label, icon }. */
-  midAction?: { formId: string; label: string; icon: string };
 }) {
   const nav = NAV[user.role] ?? [];
   const isAdmin = user.role === "ADMIN";
@@ -137,7 +134,7 @@ export default async function AppShell({
         </main>
       </div>
 
-      {!isAdmin ? <BottomNav nav={nav} active={active} midAction={midAction} /> : null}
+      {!isAdmin ? <BottomNav nav={nav} active={active} /> : null}
     </>
   );
 }
