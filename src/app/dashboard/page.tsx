@@ -6,7 +6,7 @@ import { NAV } from "@/lib/nav";
 import AppShell from "@/components/app-shell";
 
 const MODULES: { nama: string; href: string; desc: string; icon: string; status: string; roles: string[] }[] = [
-  { nama: "Presensi", href: "/presensi", desc: "Isi absensi sesi mengajar hari ini", icon: "✅", status: "PRESENSI", roles: ["GURU", "ADMIN"] },
+  { nama: "Presensi", href: "/presensi", desc: "Isi absensi sesi mengajar hari ini", icon: "📝", status: "PRESENSI", roles: ["GURU", "ADMIN"] },
   { nama: "Tujuan Pembelajaran", href: "/tp", desc: "Susun TP per kelas selaras e-Rapor", icon: "🎯", status: "LMS", roles: ["GURU", "ADMIN"] },
   { nama: "Materi Belajar", href: "/materi", desc: "Akses bahan ajar & modul", icon: "📖", status: "LMS", roles: ["GURU", "SISWA", "ORTU", "KEPSEK"] },
   { nama: "Tugas Siswa", href: "/tugas", desc: "Kumpulkan tugas & pantau nilai", icon: "📝", status: "LMS", roles: ["GURU", "SISWA"] },

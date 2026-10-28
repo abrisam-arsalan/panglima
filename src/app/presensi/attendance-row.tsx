@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { AttendanceStatus } from "@prisma/client";
 
 const OPTS: { st: AttendanceStatus; huruf: string; ikon: string; label: string }[] = [
-  { st: "HADIR", huruf: "H", ikon: "✅", label: "Hadir" },
+  { st: "HADIR", huruf: "H", ikon: "✔️", label: "Hadir" },
   { st: "SAKIT", huruf: "S", ikon: "🤒", label: "Sakit" },
   { st: "IZIN", huruf: "I", ikon: "📄", label: "Izin" },
   { st: "ALPHA", huruf: "A", ikon: "❌", label: "Alpa" },

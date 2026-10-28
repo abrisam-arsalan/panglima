@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import type { AttendanceStatus } from "@prisma/client";
 
 const LABEL: Record<AttendanceStatus, string> = {
-  HADIR: "✅ Hadir",
+  HADIR: "✔️ Hadir",
   SAKIT: "🤒 Sakit",
   IZIN: "📄 Izin",
   ALPHA: "❌ Alpa",

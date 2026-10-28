@@ -27,9 +27,10 @@ export default function SaveButtons() {
         name="finish"
         value="1"
         disabled={pending}
+        title="Mengunci sesi — tidak bisa diubah guru lagi (kecuali admin)"
         style={{ minHeight: 46, fontSize: 14, flex: "1 1 auto" }}
       >
-        {pending ? "Menyimpan…" : "✅ Selesai"}
+        {pending ? "Menyimpan…" : "🔒 Kunci Selesai"}
       </button>
     </div>
   );

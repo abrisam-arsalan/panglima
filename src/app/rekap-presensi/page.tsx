@@ -53,7 +53,7 @@ export default async function RekapPresensiPage({
 
         <div className="stat-grid" style={{ marginBottom: 16 }}>
           <div className="card" style={{ textAlign: "center", margin: 0, padding: 14 }}>
-            <h3 style={{ fontSize: 13, textTransform: "uppercase" }}>✅ Hadir</h3>
+            <h3 style={{ fontSize: 13, textTransform: "uppercase" }}>✔️ Hadir</h3>
             <span style={{ fontSize: 26, fontWeight: 900, color: "var(--teal)" }}>{summary.HADIR}</span>
           </div>
           <div className="card" style={{ textAlign: "center", margin: 0, padding: 14 }}>
@@ -162,7 +162,7 @@ export default async function RekapPresensiPage({
 
         <div className="stat-grid" style={{ marginBottom: 16 }}>
           <div className="card" style={{ textAlign: "center", margin: 0, padding: 14 }}>
-            <h3 style={{ fontSize: 13, textTransform: "uppercase" }}>✅ Hadir</h3>
+            <h3 style={{ fontSize: 13, textTransform: "uppercase" }}>✔️ Hadir</h3>
             <span style={{ fontSize: 26, fontWeight: 900, color: "var(--teal)" }}>{summary.HADIR}</span>
           </div>
           <div className="card" style={{ textAlign: "center", margin: 0, padding: 14 }}>
@@ -308,7 +308,7 @@ export default async function RekapPresensiPage({
           </span>
         </div>
         <div className="card" style={{ textAlign: "center", margin: 0, padding: 14 }}>
-          <h3 style={{ fontSize: 13, textTransform: "uppercase" }}>✅ Hadir</h3>
+          <h3 style={{ fontSize: 13, textTransform: "uppercase" }}>✔️ Hadir</h3>
           <span style={{ fontSize: 24, fontWeight: 900, color: "var(--teal)" }}>{totalHadir}</span>
         </div>
         <div className="card" style={{ textAlign: "center", margin: 0, padding: 14 }}>
