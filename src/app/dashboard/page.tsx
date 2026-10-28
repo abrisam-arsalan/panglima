@@ -15,6 +15,7 @@ const MODULES: { nama: string; href: string; desc: string; icon: string; status:
   { nama: "MPI Edukasi", href: "/mpi", desc: "Game interaktif & media belajar", icon: "🎮", status: "GAME", roles: ["GURU", "SISWA", "KEPSEK"] },
   { nama: "Ujian CBT", href: "/ujian", desc: "Platform asesmen & tes formatif", icon: "📋", status: "CBT", roles: ["GURU", "SISWA", "ORTU", "ADMIN"] },
   { nama: "Kehadiran", href: "/rekap-presensi", desc: "Pantau rekap kehadiran belajar", icon: "📅", status: "PRESENSI", roles: ["SISWA", "ORTU", "KEPSEK"] },
+  { nama: "Rekap Presensi", href: "/rekap-presensi", desc: "Hasil presensi guru per rombel & tanggal", icon: "📅", status: "PRESENSI", roles: ["ADMIN"] },
   { nama: "Kelola Akun", href: "/admin/akun/siswa", desc: "Kelola akun siswa, guru, rombel, & ortu", icon: "👥", status: "ADMIN", roles: ["ADMIN"] },
   { nama: "Penugasan Mengajar", href: "/admin/penugasan", desc: "Penugasan guru, wali kelas, & mapel", icon: "📋", status: "ADMIN", roles: ["ADMIN"] },
   { nama: "Jadwal Pelajaran", href: "/jadwal", desc: "Kelola & impor jadwal pelajaran", icon: "🗓️", status: "ADMIN", roles: ["ADMIN"] },

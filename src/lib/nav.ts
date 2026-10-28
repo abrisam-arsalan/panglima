@@ -28,6 +28,7 @@ export const NAV: Record<Role, NavItem[]> = {
       ],
     },
     { href: "/admin/penugasan", icon: "📋", label: "Penugasan" },
+    { href: "/rekap-presensi", icon: "📅", label: "Rekap Presensi" },
     { href: "/jadwal", icon: "🗓️", label: "Jadwal" },
     { href: "/pengumuman", icon: "📢", label: "Pengumuman" },
     { href: "/admin/ujian", icon: "📋", label: "Ujian" },
