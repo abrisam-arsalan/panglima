@@ -36,12 +36,13 @@
   "/admin/akun/kelas/page": "/admin/akun/kelas",
   "/admin/akun/ortu/page": "/admin/akun/ortu",
   "/admin/akun/siswa/page": "/admin/akun/siswa",
-  "/admin/akun/guru/page": "/admin/akun/guru",
   "/admin/cetak/page": "/admin/cetak",
   "/admin/cetak/[id]/page": "/admin/cetak/[id]",
   "/admin/laporan/page": "/admin/laporan",
   "/admin/setup/page": "/admin/setup",
+  "/admin/akun/guru/page": "/admin/akun/guru",
   "/admin/penugasan/page": "/admin/penugasan",
   "/login/page": "/login",
+  "/profil/page": "/profil",
   "/umpan-balik/page": "/umpan-balik"
 }

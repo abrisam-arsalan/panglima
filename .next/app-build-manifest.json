@@ -271,21 +271,13 @@
       "static/chunks/2619-3c9e02e22d10480a.js",
       "static/chunks/app/admin/akun/siswa/page-691c3b1a0715537e.js"
     ],
-    "/admin/akun/guru/page": [
-      "static/chunks/webpack-5e832660a1ec390d.js",
-      "static/chunks/4bd1b696-f785427dddbba9fb.js",
-      "static/chunks/1255-5cd2fe06309409a0.js",
-      "static/chunks/main-app-1d9adf5c8090fb64.js",
-      "static/chunks/2619-3c9e02e22d10480a.js",
-      "static/chunks/app/admin/akun/guru/page-691c3b1a0715537e.js"
-    ],
     "/admin/cetak/page": [
       "static/chunks/webpack-5e832660a1ec390d.js",
       "static/chunks/4bd1b696-f785427dddbba9fb.js",
       "static/chunks/1255-5cd2fe06309409a0.js",
       "static/chunks/main-app-1d9adf5c8090fb64.js",
       "static/chunks/2619-3c9e02e22d10480a.js",
-      "static/chunks/app/admin/cetak/page-de7bc0567e3a5698.js"
+      "static/chunks/app/admin/cetak/page-e2a8196265df9aba.js"
     ],
     "/admin/cetak/[id]/page": [
       "static/chunks/webpack-5e832660a1ec390d.js",
@@ -301,7 +293,7 @@
       "static/chunks/1255-5cd2fe06309409a0.js",
       "static/chunks/main-app-1d9adf5c8090fb64.js",
       "static/chunks/2619-3c9e02e22d10480a.js",
-      "static/chunks/app/admin/laporan/page-de7bc0567e3a5698.js"
+      "static/chunks/app/admin/laporan/page-e2a8196265df9aba.js"
     ],
     "/admin/setup/page": [
       "static/chunks/webpack-5e832660a1ec390d.js",
@@ -309,7 +301,15 @@
       "static/chunks/1255-5cd2fe06309409a0.js",
       "static/chunks/main-app-1d9adf5c8090fb64.js",
       "static/chunks/2619-3c9e02e22d10480a.js",
-      "static/chunks/app/admin/setup/page-de7bc0567e3a5698.js"
+      "static/chunks/app/admin/setup/page-e2a8196265df9aba.js"
+    ],
+    "/admin/akun/guru/page": [
+      "static/chunks/webpack-5e832660a1ec390d.js",
+      "static/chunks/4bd1b696-f785427dddbba9fb.js",
+      "static/chunks/1255-5cd2fe06309409a0.js",
+      "static/chunks/main-app-1d9adf5c8090fb64.js",
+      "static/chunks/2619-3c9e02e22d10480a.js",
+      "static/chunks/app/admin/akun/guru/page-691c3b1a0715537e.js"
     ],
     "/admin/penugasan/page": [
       "static/chunks/webpack-5e832660a1ec390d.js",
@@ -325,6 +325,14 @@
       "static/chunks/1255-5cd2fe06309409a0.js",
       "static/chunks/main-app-1d9adf5c8090fb64.js",
       "static/chunks/app/login/page-50c7423790c747e7.js"
+    ],
+    "/profil/page": [
+      "static/chunks/webpack-5e832660a1ec390d.js",
+      "static/chunks/4bd1b696-f785427dddbba9fb.js",
+      "static/chunks/1255-5cd2fe06309409a0.js",
+      "static/chunks/main-app-1d9adf5c8090fb64.js",
+      "static/chunks/2619-3c9e02e22d10480a.js",
+      "static/chunks/app/profil/page-e2a8196265df9aba.js"
     ],
     "/umpan-balik/page": [
       "static/chunks/webpack-5e832660a1ec390d.js",

@@ -210,6 +210,12 @@
       "namedRegex": "^/presensi(?:/)?$"
     },
     {
+      "page": "/profil",
+      "regex": "^/profil(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/profil(?:/)?$"
+    },
+    {
       "page": "/rekap-presensi",
       "regex": "^/rekap\\-presensi(?:/)?$",
       "routeKeys": {},
