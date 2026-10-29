@@ -15,6 +15,25 @@ const DEFAULT_GAMES = [
   { slug: "xxo-edukasi", title: "XXO Edukasi", desc: "Tic-Tac-Toe dengan soal pemikiran kritis di setiap giliran.", icon: "⭕", file: "xxo-edukasi.html" },
 ];
 
+/**
+ * Karakter panggung per game (hasil bedah 9 file HTML):
+ * - ratio: aspek iframe arena (lihat CSS .mpi-arena.ratio-*)
+ * - focus: porsi kolom soal vs arena di layar lebar
+ * - keyboard: hint tombol yang didukung game HTML-nya
+ * - tips: panduan singkat guru memakai game ini di IFP
+ */
+const STAGE: Record<string, { ratio: string; focus: "" | "arena-focus" | "soal-focus"; keyboard: string; pemain: string; tips: string }> = {
+  "clash-of-champions": { ratio: "ratio-16-10", focus: "arena-focus", keyboard: "Klik/sentuh", pemain: "2–8 tim · rebutan", tips: "Buka papan di IFP, tunjuk juru bicara tiap tim. Bonus kecepatan membuat kelas riuh — siapkan aturan giliran." },
+  "edu-racing": { ratio: "ratio-16-10", focus: "arena-focus", keyboard: "Klik/sentuh", pemain: "2–4 tim · balapan", tips: "Tombol JAWAB! diperebutkan — atur siapa menekan dari tiap tim agar adil." },
+  "famili-100": { ratio: "ratio-16-10", focus: "", keyboard: "Ketik + Enter", pemain: "2 tim · tebak survei", tips: "Guru mengetik jawaban tim di IFP. Cocok untuk melatih kosakata dan diskusi." },
+  "gesture-battle": { ratio: "ratio-16-9", focus: "arena-focus", keyboard: "Kamera / sentuh", pemain: "1–6 pemain · gerak", tips: "Butuh kamera + ruang gerak di depan IFP. Kalibrasi 4 titik dulu sebelum mulai." },
+  "kamera-benar-salah": { ratio: "ratio-16-9", focus: "arena-focus", keyboard: "Kamera + klik guru", pemain: "Kelompok · gerak badan", tips: "Siswa berdiri ke zona kiri/kanan. Guru mengunci jawaban dari laptop." },
+  "millionaire": { ratio: "ratio-16-10", focus: "", keyboard: "A–D / 1–4, Enter, Spasi", pemain: "Individu / tim / rebutan", tips: "Mode rebutan paling seru di IFP. Lifeline 50:50 dan voting penonton memancing diskusi." },
+  "mystery-box": { ratio: "ratio-16-10", focus: "arena-focus", keyboard: "Klik/sentuh, Esc/Spasi", pemain: "2–8 tim · pilih kotak", tips: "Klik kotak dari IFP langsung. Sesuai untuk review materi sebelum ulangan." },
+  "snake-quiz": { ratio: "ratio-16-10", focus: "arena-focus", keyboard: "WASD vs Panah, 1–4, P/Spasi", pemain: "2 tim · arkade", tips: "Dua pengendali (keyboard + D-pad sentuh IFP). Cocok sebagai penutup pelajaran yang energik." },
+  "xxo-edukasi": { ratio: "ratio-16-10", focus: "", keyboard: "Klik/sentuh", pemain: "X vs O · rebut kotak", tips: "Rebut kotak lalu jawab soal. 3 berurutan = kombinasi +100." },
+};
+
 export default async function MpiPage({
   searchParams,
 }: {
@@ -50,6 +69,8 @@ export default async function MpiPage({
   const tingkat = me?.classRef?.tingkat ?? undefined;
 
   if (activeGame) {
+    const stage = STAGE[activeGame.slug] ?? { ratio: "ratio-16-10", focus: "" as const, keyboard: "Klik/sentuh", pemain: "Kelas", tips: "" };
+    const isGuru = user.role === "GURU" || user.role === "ADMIN";
     return (
       <AppShell user={user} active="/mpi">
         <div className="breadcrumb">
@@ -65,28 +86,52 @@ export default async function MpiPage({
               {activeGame.icon} {activeGame.title}
             </h1>
             <p className="muted">{activeGame.desc}</p>
+            <p className="muted" style={{ marginTop: 4 }}>
+              👥 {stage.pemain} · ⌨️ {stage.keyboard}
+            </p>
           </div>
-          <a className="btn btn-sm" href="/mpi">
-            ← Kembali ke Arena Game
-          </a>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <a className="btn btn-sm" href={`/game/${activeGame.file}`} target="_blank" rel="noreferrer" title="Buka arena layar penuh di tab baru — ideal untuk IFP">
+              ⛶ Layar Penuh
+            </a>
+            <a className="btn btn-sm" href="/mpi">
+              ← Arena Game
+            </a>
+          </div>
         </div>
 
-        {/* Mode 1: soal server (koreksi di server, kunci tidak ke klien) */}
-        <MpiMain slug={activeGame.slug} title={activeGame.title} tingkat={tingkat} />
-
-        {/* Mode 2: arena HTML statis (game visual tanpa bank soal) */}
-        <div className="card" style={{ marginTop: 16 }}>
-          <div className="card-head">
-            <h2>🎮 Arena Visual</h2>
-            <span className="muted">Game HTML interaktif (tanpa skor server)</span>
+        {isGuru && stage.tips && (
+          <div className="alert alert-info" style={{ marginBottom: 16 }}>
+            💡 <b>Panduan IFP:</b> {stage.tips}
           </div>
-          <div className="card-body" style={{ padding: 0, overflow: "hidden" }}>
-            <iframe
-              src={`/game/${activeGame.file}`}
-              style={{ width: "100%", height: 480, border: "none" }}
-              title={activeGame.title}
-              allow="camera; microphone; fullscreen; autoplay"
-            />
+        )}
+
+        <div className={`mpi-stage ${stage.focus}`}>
+          {/* Kolom soal server (koreksi di server, kunci tidak ke klien) */}
+          <MpiMain slug={activeGame.slug} title={activeGame.title} tingkat={tingkat} />
+
+          {/* Kolom arena visual: soal guru via shim /api/questions.php */}
+          <div>
+            <div className="card" style={{ margin: 0 }}>
+              <div className="card-head">
+                <h2>🎮 Arena Visual</h2>
+                <span className="muted">Soal guru · skor kelas</span>
+              </div>
+              <div className="card-body" style={{ padding: 0, overflow: "hidden" }}>
+                <div className={`mpi-arena ${stage.ratio}`}>
+                  <iframe
+                    src={`/game/${activeGame.file}`}
+                    title={activeGame.title}
+                    allow="camera; microphone; fullscreen; autoplay"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mpi-arena-tools">
+              <a className="btn btn-sm btn-block-mobile" href={`/game/${activeGame.file}`} target="_blank" rel="noreferrer">
+                ⛶ Buka Arena Layar Penuh (untuk IFP)
+              </a>
+            </div>
           </div>
         </div>
       </AppShell>
@@ -112,15 +157,11 @@ export default async function MpiPage({
         )}
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: 16,
-        }}
-      >
-        {games.map((g) => (
-          <div key={g.slug} className="card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div className="mpi-grid">
+        {games.map((g) => {
+          const st = STAGE[g.slug];
+          return (
+          <div key={g.slug} className="card mpi-card">
             <div className="card-body">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                 <div style={{
@@ -139,6 +180,11 @@ export default async function MpiPage({
               </div>
               <h2 style={{ fontSize: 18, marginBottom: 6 }}>{g.title}</h2>
               <p className="muted" style={{ fontSize: 14 }}>{g.desc}</p>
+              {st && (
+                <p className="meta" style={{ marginTop: 6 }}>
+                  👥 {st.pemain} · ⌨️ {st.keyboard}
+                </p>
+              )}
             </div>
             <div style={{ padding: "0 16px 16px" }}>
               <a className="btn btn-primary" style={{ width: "100%", textAlign: "center" }} href={`/mpi?game=${g.slug}`}>
@@ -146,7 +192,8 @@ export default async function MpiPage({
               </a>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </AppShell>
   );

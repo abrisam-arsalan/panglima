@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Soal {
   id: number | string;
@@ -92,9 +92,31 @@ export default function MpiMain({
   }, [soal, jawab, slug]);
 
   const benarMap = new Map((hasil?.hasil ?? []).map((h) => [h.soalId, h]));
+  const terjawab = soal.filter((s) => jawab[String(s.id)]).length;
+
+  // Keyboard IFP/laptop: A–D / 1–4 menjawab soal pertama yang belum terjawab.
+  useEffect(() => {
+    if (hasil || soal.length === 0) return;
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      const k = e.key.toUpperCase();
+      const idx = ["A", "B", "C", "D"].indexOf(k) !== -1
+        ? ["A", "B", "C", "D"].indexOf(k)
+        : ["1", "2", "3", "4"].indexOf(k);
+      if (idx === -1) return;
+      const s = soal.find((x) => !jawab[String(x.id)]);
+      if (!s) return;
+      const opsi = OPSI.filter((o) => s[o.field]);
+      if (idx >= opsi.length) return;
+      setJawab((j) => ({ ...j, [String(s.id)]: opsi[idx].key }));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [soal, jawab, hasil]);
 
   return (
-    <div className="card">
+    <div className="card mpi-soal">
       <div className="card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
         <h2>🎯 {title} — Soal Server</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -112,8 +134,16 @@ export default function MpiMain({
       <div className="card-body">
         {err && <div className="alert alert-error" style={{ marginBottom: 12 }}>{err}</div>}
         {hasil && (
-          <div className="alert alert-info" style={{ marginBottom: 16, padding: 14 }}>
-            🏆 Skor: <b>{hasil.skor}</b> — Benar {hasil.benar} dari {hasil.total} soal.
+          <div className="mpi-hasil alert alert-info" style={{ marginBottom: 16 }}>
+            <div className="skor-besar">🏆 {hasil.skor}</div>
+            <div style={{ fontSize: 17, marginTop: 6 }}>Benar <b>{hasil.benar}</b> dari <b>{hasil.total}</b> soal</div>
+          </div>
+        )}
+        {soal.length > 0 && !hasil && (
+          <div className="mpi-progress" aria-label={`Terjawab ${terjawab} dari ${soal.length}`}>
+            <span className="muted" style={{ fontWeight: 800 }}>{terjawab}/{soal.length}</span>
+            <div className="bar"><span style={{ width: `${soal.length ? Math.round((terjawab / soal.length) * 100) : 0}%` }} /></div>
+            <span className="muted" style={{ fontSize: 12 }}>Tombol A–D / 1–4 menjawab</span>
           </div>
         )}
         {soal.length === 0 && !err && (
@@ -123,7 +153,7 @@ export default function MpiMain({
           const h = benarMap.get(String(s.id));
           return (
             <div key={String(s.id)} className="list-row" style={{ padding: "12px 14px", marginBottom: 10 }}>
-              <b style={{ fontSize: 15 }}>{i + 1}. {s.pertanyaan}</b>
+              <div className="soal-teks">{i + 1}. {s.pertanyaan}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
                 {OPSI.filter((o) => s[o.field]).map((o) => {
                   const val = String(s[o.field] ?? "");
@@ -147,14 +177,14 @@ export default function MpiMain({
                 })}
               </div>
               {h?.penjelasan && (
-                <div style={{ fontSize: 13, marginTop: 8 }}>💡 {h.penjelasan}</div>
+                <div style={{ fontSize: 14, marginTop: 8 }}>💡 {h.penjelasan}</div>
               )}
             </div>
           );
         })}
         {soal.length > 0 && !hasil && (
           <button type="button" className="btn btn-primary btn-block-mobile" onClick={kumpul} disabled={loading} style={{ minHeight: 48, marginTop: 8 }}>
-            {loading ? "Mengoreksi…" : "📝 Kumpulkan & Koreksi"}
+            {loading ? "Mengoreksi…" : `📝 Kumpulkan & Koreksi (${terjawab}/${soal.length})`}
           </button>
         )}
       </div>

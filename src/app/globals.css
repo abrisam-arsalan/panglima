@@ -602,6 +602,101 @@ html, body {
 .att-ket-toggle.has-text { border-style: solid; background: var(--sky); }
 .att-ket-row { padding: 0 10px 8px 34px; border-bottom: 2px solid var(--ink); }
 .att-ket-row:last-child { border-bottom: 0; }
+
+/* MPI panggung IFP/laptop: daftar game grid lebar, halaman game 2 kolom
+   (soal kiri + arena kanan) di layar ≥1100px, menumpuk di bawah itu. */
+.mpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+@media (min-width: 1100px) {
+  .mpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .layout-admin .mpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.mpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+}
+.mpi-stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (min-width: 1100px) {
+  .mpi-stage { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .mpi-stage.arena-focus { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
+  .mpi-stage.soal-focus { grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); }
+}
+.mpi-arena {
+  position: relative;
+  background: #000;
+  border: var(--line);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.mpi-arena iframe {
+  display: block;
+  width: 100%;
+  border: none;
+  background: #fff;
+}
+/* Rasio arena per game (default 16/10, portrait untuk snake/dll). */
+.mpi-arena.ratio-16-10 iframe { aspect-ratio: 16 / 10; height: auto; }
+.mpi-arena.ratio-16-9 iframe { aspect-ratio: 16 / 9; height: auto; }
+.mpi-arena.ratio-4-3 iframe { aspect-ratio: 4 / 3; height: auto; }
+.mpi-arena.ratio-square iframe { aspect-ratio: 1 / 1; height: auto; }
+.mpi-arena.ratio-fixed iframe { height: 560px; }
+@media (min-width: 1400px) {
+  .mpi-arena.ratio-fixed iframe { height: 640px; }
+}
+.mpi-arena-tools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+/* Soal besar ramah IFP: font soal ≥18px, opsi sentuh besar. */
+.mpi-soal { font-size: 17px; }
+.mpi-soal .soal-teks { font-size: 19px; font-weight: 800; line-height: 1.5; }
+@media (min-width: 1100px) {
+  .mpi-soal .soal-teks { font-size: 21px; }
+}
+.mpi-soal .status-pill { font-size: 16px; padding: 12px 10px; min-height: 56px; }
+.mpi-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.mpi-progress .bar {
+  flex: 1 1 120px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  background: var(--card);
+  min-width: 80px;
+}
+.mpi-progress .bar > span {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+}
+.mpi-hasil {
+  text-align: center;
+  padding: 20px 16px;
+}
+.mpi-hasil .skor-besar {
+  font-size: 56px;
+  font-weight: 900;
+  line-height: 1;
+}
+@media (min-width: 1100px) {
+  .mpi-hasil .skor-besar { font-size: 72px; }
+}
 .status-pill {
   cursor: pointer;
   font-size: 13px;
