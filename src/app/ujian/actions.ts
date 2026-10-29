@@ -60,7 +60,10 @@ export async function syncStudentsAction() {
   assertPinClear(user);
   if (!user || user.role !== "ADMIN") redirect("/login");
 
-  await syncStudentsToCbt();
+  const { synced, errors } = await syncStudentsToCbt();
   revalidatePath("/ujian");
   revalidatePath("/admin/ujian");
+  redirect(
+    `/admin/akun/siswa?sync=1&synced=${synced}&syncerr=${errors}`
+  );
 }

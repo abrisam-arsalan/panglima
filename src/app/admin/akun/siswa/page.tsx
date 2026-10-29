@@ -22,10 +22,13 @@ export default async function AkunSiswaPage({
     existing?: string;
     skipped?: string;
     pinShow?: string;
+    sync?: string;
+    synced?: string;
+    syncerr?: string;
   }>;
 }) {
   const me = await requireAdminSurface("admin/akun/siswa");
-  const { q, classId: rawClassId, err, msg, done, created, existing, skipped, pinShow } = await searchParams;
+  const { q, classId: rawClassId, err, msg, done, created, existing, skipped, pinShow, sync, synced, syncerr } = await searchParams;
   const { readPinShow } = await import("@/lib/pin-show");
   const pinInfo = pinShow ? await readPinShow(me.id, pinShow) : null;
   const ctx = await currentSemester();
@@ -95,6 +98,14 @@ export default async function AkunSiswaPage({
           <span className="badge badge-yellow">ℹ Sudah Ada: {existing ?? 0}</span>
           {Number(skipped) > 0 && <span className="badge badge-red">✕ Gagal: {skipped}</span>}
           <span className="pill" style={{ marginLeft: "auto" }}>Otomatis tersinkron ke Ujian (CBT)</span>
+        </div>
+      )}
+      {sync && (
+        <div className="alert alert-info" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <span><b>Hasil Sinkron ke CBT:</b></span>
+          <span className="badge badge-green">✓ Tersinkron: {synced ?? 0}</span>
+          {Number(syncerr) > 0 && <span className="badge badge-red">✕ Gagal: {syncerr}</span>}
+          <span className="pill" style={{ marginLeft: "auto" }}>Cek kartu ujian bila PIN belum tampil</span>
         </div>
       )}
 
