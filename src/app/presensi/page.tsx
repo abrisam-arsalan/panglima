@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/app-shell";
 import PageHead from "@/components/page-head";
 import { GlyphPresensi } from "@/components/glyph";
-import { DAYS } from "@/lib/notify";
+import { DAYS, roomLabel } from "@/lib/notify";
 import { openSession, reopenSession, saveAttendance } from "./actions";
 import MarkAll from "./mark-all";
 import AttendanceRow from "./attendance-row";
@@ -248,7 +248,7 @@ export default async function PresensiPage({
                     {s.assignment.class.name} · {s.assignment.subject.name}
                   </h3>
                   <div className="meta">
-                    ⏰ {s.startTime} – {s.endTime} {s.room ? `· Ruang: ${s.room}` : ""} · Guru: {s.assignment.teacher?.nama}
+                    ⏰ {s.startTime} – {s.endTime} {roomLabel(s.room) ? `· ${roomLabel(s.room)}` : ""} · Guru: {s.assignment.teacher?.nama}
                   </div>
                 </div>
 
@@ -294,7 +294,7 @@ export default async function PresensiPage({
                   {s.assignment.class.name} — {s.assignment.subject.name}
                 </div>
                 <div className="meta" style={{ marginTop: 4 }}>
-                  {s.room ? `Ruang ${s.room}` : "Kelas reguler"}
+                  {roomLabel(s.room) || "Kelas reguler"}
                 </div>
                 <form action={openSession} style={{ marginTop: 12 }}>
                   <input type="hidden" name="scheduleId" value={String(s.id)} />

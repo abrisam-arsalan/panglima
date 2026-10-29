@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { classAssignments, currentSemester, studentClassId, teacherAssignments } from "@/lib/academic";
 import AppShell from "@/components/app-shell";
 import DangerSubmit from "@/components/danger-submit";
-import { DAYS } from "@/lib/notify";
+import { DAYS, roomLabel } from "@/lib/notify";
 import { activateSchedule, addSchedule, deleteSchedule } from "./actions";
 import { importBulkAction } from "@/app/admin/akun/actions";
 
@@ -146,7 +146,7 @@ function WeekView({ rows, today, showInactive = false }: { rows: Awaited<ReturnT
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 4 }}>
                       <b style={{ fontSize: 16 }}>{s.assignment.subject.name}</b>
                       <span className="badge badge-yellow">⏰ {s.startTime} – {s.endTime}</span>
-                      {s.room && <span className="pill">Ruang: {s.room}</span>}
+                      {roomLabel(s.room) && <span className="pill">{roomLabel(s.room)}</span>}
                       {isToday && (
                         isOngoing ? (
                           <span className="badge badge-green">SEDANG BERLANGSUNG</span>
